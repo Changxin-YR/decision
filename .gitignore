@@ -20,3 +20,6 @@ local.properties
 *.hsp
 *.hap
 *.app
+*.key
+*.pem
+*.der

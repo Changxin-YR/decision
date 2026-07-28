@@ -1,36 +1,31 @@
-# decision
+# Make a Decision
 
-#### Description
-开发个人决定
+A fully offline HarmonyOS decision helper built natively with Stage, ArkTS, and ArkUI for API 24. It contains no WebView or cross-platform runtime.
 
-#### Software Architecture
-Software architecture description
+## Features
 
-#### Installation
+- Fair animated wheel with pointer-aligned results
+- Repeat-aware drawing tool
+- Multi-touch finger selector with countdown and random locking
+- Coin flip, yes/no, and random number tools
+- Built-in and custom templates, optional history, and theme settings
+- Local persistence and lifecycle-safe animation cancellation
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## Development
 
-#### Instructions
+Use DevEco Studio 6.1.1 with the HarmonyOS/OpenHarmony API 24 SDK. Build from PowerShell:
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+```powershell
+$env:DEVECO_SDK_HOME='C:\Program Files\Huawei\DevEco Studio\sdk'
+& 'C:\Program Files\Huawei\DevEco Studio\tools\hvigor\bin\hvigorw.bat' `
+  --mode module -p product=default -p module=entry@default `
+  assembleHap --no-daemon
+```
 
-#### Contribution
+Build the Hypium test HAP by changing `module=entry@default` to `module=entry@ohosTest`.
 
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
+## Privacy
 
+The app requests no network, camera, location, microphone, or media permissions. Settings, templates, and history remain on the device. See [docs/PRIVACY.md](docs/PRIVACY.md).
 
-#### Gitee Feature
-
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+Verification details are documented in [docs/TESTING.md](docs/TESTING.md) and [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md).
