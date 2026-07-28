@@ -1,3 +1,5 @@
+import { ThemeMode } from '../models/AppModels';
+
 export class AppColors {
   static readonly PRIMARY: string = '#4A90D9';
   static readonly PRIMARY_LIGHT: string = '#6BA5E7';
@@ -13,6 +15,46 @@ export class AppColors {
   static readonly DARK_BORDER: string = '#4A4A4A';
   static readonly ERROR: string = '#E74C3C';
   static readonly SUCCESS: string = '#27AE60';
+}
+
+export interface ThemeTokens {
+  background: string;
+  card: string;
+  text: string;
+  subtext: string;
+  border: string;
+  accent: string;
+  error: string;
+  success: string;
+}
+
+export class ThemeResolver {
+  static resolve(mode: ThemeMode, systemDark: boolean): ThemeTokens {
+    const dark: boolean = mode === ThemeMode.DARK ||
+      (mode === ThemeMode.SYSTEM && systemDark);
+    if (dark) {
+      return {
+        background: AppColors.DARK_BACKGROUND,
+        card: AppColors.DARK_CARD,
+        text: AppColors.DARK_TEXT,
+        subtext: AppColors.DARK_SUBTEXT,
+        border: AppColors.DARK_BORDER,
+        accent: AppColors.PRIMARY,
+        error: AppColors.ERROR,
+        success: AppColors.SUCCESS
+      };
+    }
+    return {
+      background: AppColors.LIGHT_BACKGROUND,
+      card: AppColors.LIGHT_CARD,
+      text: AppColors.LIGHT_TEXT,
+      subtext: AppColors.LIGHT_SUBTEXT,
+      border: AppColors.LIGHT_BORDER,
+      accent: AppColors.PRIMARY,
+      error: AppColors.ERROR,
+      success: AppColors.SUCCESS
+    };
+  }
 }
 
 export class AppSpacing {
