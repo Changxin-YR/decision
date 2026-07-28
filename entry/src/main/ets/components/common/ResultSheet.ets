@@ -3,15 +3,20 @@ import {
   AppRadii,
   ThemeTokens
 } from '../../constants/DesignTokens';
-import { AppButton } from './AppButton';
+import { AppStrings } from '../../constants/AppStrings';
+import { AppButton, AppButtonVariant } from './AppButton';
 
 @Component
 export struct ResultSheet {
   @Prop visible: boolean = false;
-  @Prop title: string = '决定结果';
+  @Prop title: string = AppStrings.RESULT_TITLE;
   @Prop result: string = '';
   @Prop colors: ThemeTokens;
+  @Prop showRetry: boolean = false;
+  @Prop retryLabel: string = AppStrings.RETRY;
   onClose: () => void = (): void => {
+  };
+  onRetry: () => void = (): void => {
   };
 
   build() {
@@ -31,8 +36,15 @@ export struct ResultSheet {
             .fontWeight(FontWeight.Bold)
             .fontColor(this.colors.text)
             .textAlign(TextAlign.Center)
+          if (this.showRetry) {
+            AppButton({
+              label: this.retryLabel,
+              onPress: (): void => this.onRetry()
+            })
+          }
           AppButton({
-            label: '知道了',
+            label: AppStrings.CLOSE_RESULT,
+            variant: this.showRetry ? AppButtonVariant.SECONDARY : AppButtonVariant.PRIMARY,
             onPress: (): void => this.onClose()
           })
         }

@@ -7,6 +7,7 @@ import {
   AppSpacing,
   ThemeTokens
 } from '../constants/DesignTokens';
+import { AppStrings } from '../constants/AppStrings';
 import {
   HistoryRecord,
   ToolType
@@ -79,7 +80,7 @@ export struct HistoryPage {
 
         if (this.store.history.length === 0) {
           Column({ space: AppSpacing.SM }) {
-            Text('还没有保存过决定')
+            Text(AppStrings.EMPTY_HISTORY)
               .fontSize(AppFontSizes.HEADING)
               .fontWeight(FontWeight.Bold)
               .fontColor(this.colors.text)
@@ -182,7 +183,9 @@ export struct HistoryPage {
               label: '再次使用',
               onPress: (): void => {
                 if (this.selected !== null) {
-                  this.onUseAgain(this.selected);
+                  const record: HistoryRecord = this.selected;
+                  this.selected = null;
+                  this.onUseAgain(record);
                 }
               }
             })

@@ -1,6 +1,7 @@
 import { AppButton, AppButtonVariant } from '../components/common/AppButton';
 import { PageHeader } from '../components/common/PageHeader';
 import { AppSpacing, ThemeTokens } from '../constants/DesignTokens';
+import { AppStrings } from '../constants/AppStrings';
 import { RandomService } from '../domain/random/RandomService';
 import { NumberValidator } from '../domain/validation/NumberValidator';
 import { HistoryRecord, ToolType } from '../models/AppModels';
@@ -57,6 +58,17 @@ export struct RandomNumberPage {
     this.saved = await appStore.saveHistoryRecord(this.record);
   }
 
+  private async copyResult(): Promise<void> {
+    const copied: boolean =
+      await clipboardService.copyLines(this.resultText.split('\n'));
+    try {
+      this.getUIContext().getPromptAction().showToast({
+        message: copied ? AppStrings.COPY_SUCCESS : AppStrings.COPY_FAILED
+      });
+    } catch (_error) {
+    }
+  }
+
   build() {
     Scroll() {
       Column({ space: AppSpacing.MD }) {
@@ -107,7 +119,7 @@ export struct RandomNumberPage {
               label: '复制',
               variant: AppButtonVariant.SECONDARY,
               onPress: (): void => {
-                clipboardService.copyLines(this.resultText.split('\n'));
+                this.copyResult();
               }
             })
             AppButton({

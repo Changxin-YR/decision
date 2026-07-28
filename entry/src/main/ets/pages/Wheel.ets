@@ -1,4 +1,5 @@
 import { AppButton, AppButtonVariant } from '../components/common/AppButton';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { PageHeader } from '../components/common/PageHeader';
 import { ResultSheet } from '../components/common/ResultSheet';
 import { OptionsEditor } from '../components/decision/OptionsEditor';
@@ -9,6 +10,9 @@ import {
   AppSpacing,
   ThemeTokens
 } from '../constants/DesignTokens';
+import { AppStrings } from '../constants/AppStrings';
+import { RandomService } from '../domain/random/RandomService';
+import { DraftChangeDetector } from '../domain/validation/DraftChangeDetector';
 import { OptionValidator } from '../domain/validation/OptionValidator';
 import {
   WheelSession,
@@ -41,6 +45,18 @@ export struct WheelPage {
   private timerId: number = -1;
   private unsubscribe: (() => void) | null = null;
   private record: HistoryRecord | null = null;
+  private initialDraftOptions: string[] = [];
+  private discardDialog: CustomDialogController = new CustomDialogController({
+    builder: ConfirmDialog({
+      title: AppStrings.DISCARD_TITLE,
+      message: AppStrings.DISCARD_MESSAGE,
+      confirmLabel: AppStrings.DISCARD_CONFIRM,
+      colors: this.colors,
+      onConfirm: (): void => this.discardAndBack()
+    }),
+    autoCancel: true,
+    alignment: DialogAlignment.Center
+  });
   private templateDialog: CustomDialogController = new CustomDialogController({
     builder: TemplateSaveDialog({
       colors: this.colors,
@@ -64,6 +80,7 @@ export struct WheelPage {
         this.initialOptions.length >= 2 ? this.initialOptions : ['', '']
       );
     }
+    this.initialDraftOptions = this.optionTexts();
     this.optionsVersion++;
     if (this.unsubscribe === null) {
       this.unsubscribe = appLifecycleBus.subscribe((background: boolean): void => {
@@ -108,6 +125,19 @@ export struct WheelPage {
     this.optionsVersion++;
   }
 
+  private requestBack(): void {
+    if (DraftChangeDetector.hasChanges(this.initialDraftOptions, this.optionTexts())) {
+      this.discardDialog.open();
+      return;
+    }
+    this.onBack();
+  }
+
+  private discardAndBack(): void {
+    decisionDraftStore.updateOptions(this.initialDraftOptions);
+    this.onBack();
+  }
+
   private cancel(): void {
     decisionDraftStore.updateOptions(this.optionTexts());
     if (this.timerId >= 0) {
@@ -137,9 +167,10 @@ export struct WheelPage {
     this.saved = false;
     this.record = null;
     soundService.play(SoundEffect.WHEEL);
+    const duration: number = RandomService.randomInteger(3000, 5000);
     const base: number = Math.ceil(this.rotation / 360) * 360;
     this.getUIContext().animateTo({
-      duration: 3600,
+      duration: duration,
       curve: Curve.EaseOut
     }, (): void => {
       this.rotation = base + spin.targetAngle;
@@ -165,7 +196,7 @@ export struct WheelPage {
       if (appStore.settings.autoSaveHistory) {
         this.save();
       }
-    }, 3600);
+    }, duration);
   }
 
   private async save(): Promise<void> {
@@ -194,7 +225,7 @@ export struct WheelPage {
             colors: this.colors,
             onBack: (): void => {
               if (!this.running) {
-                this.onBack();
+                this.requestBack();
               }
             }
           })
@@ -266,6 +297,11 @@ export struct WheelPage {
         visible: this.result.length > 0,
         result: this.result,
         colors: this.colors,
+        showRetry: true,
+        onRetry: (): void => {
+          this.result = '';
+          this.spin();
+        },
         onClose: (): void => {
           this.result = '';
         }

@@ -1,6 +1,10 @@
 {
   "string": [
     {
+      "name": "vibration_reason",
+      "value": "用于在决定结果产生时提供振动反馈"
+    },
+    {
       "name": "module_desc",
       "value": "离线单机决策工具"
     },

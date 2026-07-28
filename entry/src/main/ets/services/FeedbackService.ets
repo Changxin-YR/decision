@@ -1,3 +1,4 @@
+import vibrator from '@ohos.vibrator';
 import { AppStore, appStore } from '../stores/AppStore';
 
 export class FeedbackService {
@@ -11,10 +12,15 @@ export class FeedbackService {
     if (!this.store.settings.vibrationEnabled || duration <= 0) {
       return false;
     }
-    // API 24's vibrator service requires a manifest permission. This project
-    // deliberately ships with zero permission declarations, so haptics
-    // degrade without affecting the decision result.
-    return false;
+    try {
+      await vibrator.startVibration(
+        { type: 'time', duration: duration },
+        { usage: 'physicalFeedback' }
+      );
+      return true;
+    } catch (_error) {
+      return false;
+    }
   }
 }
 

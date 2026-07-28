@@ -1,4 +1,5 @@
 import { AppButton, AppButtonVariant } from '../components/common/AppButton';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { PageHeader } from '../components/common/PageHeader';
 import { ResultSheet } from '../components/common/ResultSheet';
 import { DrawTube } from '../components/decision/DrawTube';
@@ -9,7 +10,9 @@ import {
   AppSpacing,
   ThemeTokens
 } from '../constants/DesignTokens';
+import { AppStrings } from '../constants/AppStrings';
 import { DrawSession } from '../domain/state/DrawSession';
+import { DraftChangeDetector } from '../domain/validation/DraftChangeDetector';
 import { OptionValidator } from '../domain/validation/OptionValidator';
 import {
   HistoryRecord,
@@ -41,6 +44,19 @@ export struct DrawPage {
   private timerIds: number[] = [];
   private unsubscribe: (() => void) | null = null;
   private record: HistoryRecord | null = null;
+  private initialDraftOptions: string[] = [];
+  private initialAllowRepeat: boolean = false;
+  private discardDialog: CustomDialogController = new CustomDialogController({
+    builder: ConfirmDialog({
+      title: AppStrings.DISCARD_TITLE,
+      message: AppStrings.DISCARD_MESSAGE,
+      confirmLabel: AppStrings.DISCARD_CONFIRM,
+      colors: this.colors,
+      onConfirm: (): void => this.discardAndBack()
+    }),
+    autoCancel: true,
+    alignment: DialogAlignment.Center
+  });
   private templateDialog: CustomDialogController = new CustomDialogController({
     builder: TemplateSaveDialog({
       colors: this.colors,
@@ -64,6 +80,8 @@ export struct DrawPage {
         this.initialOptions.length >= 2 ? this.initialOptions : ['', '']
       );
     }
+    this.initialDraftOptions = this.optionTexts();
+    this.initialAllowRepeat = this.allowRepeat;
     this.optionsVersion++;
     const activeSession: DrawSession | null = decisionDraftStore.currentDrawSession();
     this.remainingCount = activeSession === null ?
@@ -125,6 +143,25 @@ export struct DrawPage {
     this.invalidateSession();
   }
 
+  private requestBack(): void {
+    if (DraftChangeDetector.hasChanges(
+      this.initialDraftOptions,
+      this.optionTexts(),
+      this.initialAllowRepeat,
+      this.allowRepeat
+    )) {
+      this.discardDialog.open();
+      return;
+    }
+    this.onBack();
+  }
+
+  private discardAndBack(): void {
+    decisionDraftStore.updateOptions(this.initialDraftOptions);
+    this.allowRepeat = this.initialAllowRepeat;
+    this.onBack();
+  }
+
   private clearTimers(): void {
     this.timerIds.forEach((timerId: number): void => clearTimeout(timerId));
     this.timerIds = [];
@@ -163,7 +200,7 @@ export struct DrawPage {
     const pending: string | null = session.start();
     if (pending === null) {
       this.error = session.remaining.length === 0 ?
-        '所有选项已经抽取完成' : '';
+        AppStrings.DRAW_FINISHED : '';
       return;
     }
     this.error = '';
@@ -252,7 +289,7 @@ export struct DrawPage {
             colors: this.colors,
             onBack: (): void => {
               if (!this.running) {
-                this.onBack();
+                this.requestBack();
               }
             }
           })
@@ -279,7 +316,7 @@ export struct DrawPage {
           })
 
           if (!this.allowRepeat && this.remainingCount === 0) {
-            Text('所有选项已经抽取完成')
+            Text(AppStrings.DRAW_FINISHED)
               .width('100%')
               .fontSize(AppFontSizes.HEADING)
               .fontWeight(FontWeight.Bold)
@@ -350,6 +387,13 @@ export struct DrawPage {
         visible: this.result.length > 0,
         result: this.result,
         colors: this.colors,
+        showRetry: true,
+        onRetry: (): void => {
+          this.result = '';
+          this.liftedLabel = '';
+          this.stickOffset = 0;
+          this.draw();
+        },
         onClose: (): void => {
           this.result = '';
           this.liftedLabel = '';

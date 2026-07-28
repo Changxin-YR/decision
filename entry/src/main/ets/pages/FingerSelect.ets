@@ -4,6 +4,7 @@ import {
   AppSpacing,
   ThemeTokens
 } from '../constants/DesignTokens';
+import { AppStrings } from '../constants/AppStrings';
 import {
   FingerSelectionMachine,
   FingerState
@@ -122,7 +123,7 @@ export struct FingerSelectPage {
     Stack() {
       Column({ space: AppSpacing.SM }) {
         Text(this.state === FingerState.LOCKED ?
-          '选中你了！' : '请大家把手指放在屏幕上')
+          '选中你了！' : AppStrings.FINGER_GUIDE)
           .fontSize(28)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.colors.text)

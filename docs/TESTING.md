@@ -30,7 +30,7 @@ $hdc='C:\Program Files\Huawei\DevEco Studio\sdk\default\openharmony\toolchains\h
   --mode module -p product=default -p module=entry@default `
   assembleHap --no-daemon
 git diff --check
-rg -n "requestPermissions|INTERNET|CAMERA|LOCATION|MICROPHONE|READ_MEDIA|WebView" AppScope entry/src/main
+rg -n "INTERNET|CAMERA|LOCATION|MICROPHONE|READ_MEDIA|WebView" AppScope entry/src/main
 ```
 
 ## 人工回归

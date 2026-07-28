@@ -27,9 +27,9 @@
 
 ## 自动化证据
 
-- Hypium：57 个测试全部通过，`Failure: 0`、`Error: 0`。
+- Hypium：58 个测试全部通过，`Failure: 0`、`Error: 0`。
 - 主 HAP：API 24 `TYPE CHECK SUCCESSFUL`、`BUILD SUCCESSFUL`。
-- 权限/跨端扫描：无 `requestPermissions`、`INTERNET`、`CAMERA`、`LOCATION`、`MICROPHONE`、`READ_MEDIA` 或 `WebView`。
+- 权限/跨端扫描：仅声明结果触感所需的 `ohos.permission.VIBRATE`；无 `INTERNET`、`CAMERA`、`LOCATION`、`MICROPHONE`、`READ_MEDIA` 或 `WebView`。
 - 仓库检查：`git diff --check` 通过，构建产物和签名文件由 `.gitignore` 排除。
 
 ## 发布前最终复核

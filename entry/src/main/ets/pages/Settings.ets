@@ -6,6 +6,7 @@ import {
   AppSpacing,
   ThemeTokens
 } from '../constants/DesignTokens';
+import { AppStrings } from '../constants/AppStrings';
 import { ThemeMode } from '../models/AppModels';
 import { appStore, AppStore } from '../stores/AppStore';
 
@@ -107,6 +108,19 @@ export struct SettingsPage {
       .onClick(action)
   }
 
+  @Builder
+  private infoRow(label: string) {
+    Text(label)
+      .width('100%')
+      .height(52)
+      .padding({ left: 16, right: 16 })
+      .fontSize(AppFontSizes.BODY)
+      .fontColor(this.colors.subtext)
+      .backgroundColor(this.colors.card)
+      .borderRadius(AppRadii.CARD)
+      .textAlign(TextAlign.Start)
+  }
+
   build() {
     Column({ space: AppSpacing.MD }) {
       PageHeader({
@@ -188,8 +202,7 @@ export struct SettingsPage {
             .fontSize(AppFontSizes.HEADING)
             .fontWeight(FontWeight.Bold)
             .fontColor(this.colors.text)
-          this.actionRow('做个决定 · 1.0.0', false, (): void => {
-          })
+          this.infoRow(AppStrings.APP_VERSION)
           this.actionRow('隐私说明', false, (): void => this.onPrivacy())
           Text('使用说明：选择一种工具，按页面提示输入或触摸，即可得到公平随机结果。')
             .width('100%')

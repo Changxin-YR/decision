@@ -1,6 +1,7 @@
 import appLifecycleBusTest from './AppLifecycleBus.test';
 import appStoreTest from './AppStore.test';
 import drawSessionTest from './DrawSession.test';
+import draftChangeDetectorTest from './DraftChangeDetector.test';
 import fingerSelectionMachineTest from './FingerSelectionMachine.test';
 import historyRepositoryTest from './HistoryRepository.test';
 import jsonCodecTest from './JsonCodec.test';
@@ -18,6 +19,7 @@ export default function testsuite(): void {
   appStoreTest();
   appLifecycleBusTest();
   drawSessionTest();
+  draftChangeDetectorTest();
   fingerSelectionMachineTest();
   jsonCodecTest();
   historyRepositoryTest();
