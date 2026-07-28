@@ -11,12 +11,12 @@ export enum AppButtonVariant {
 export struct AppButton {
   @Prop label: string = '';
   @Prop variant: AppButtonVariant = AppButtonVariant.PRIMARY;
-  @Prop enabled: boolean = true;
+  @Prop isEnabled: boolean = true;
   @Prop fullWidth: boolean = true;
   onPress: () => void = (): void => {
   };
 
-  private background(): string {
+  private buttonBackground(): string {
     if (this.variant === AppButtonVariant.TEXT) {
       return '#00000000';
     }
@@ -46,10 +46,10 @@ export struct AppButton {
       .fontSize(AppFontSizes.BODY)
       .fontWeight(FontWeight.Medium)
       .fontColor(this.foreground())
-      .backgroundColor(this.background())
+      .backgroundColor(this.buttonBackground())
       .borderRadius(AppRadii.CARD)
-      .opacity(this.enabled ? 1 : 0.45)
-      .enabled(this.enabled)
+      .opacity(this.isEnabled ? 1 : 0.45)
+      .enabled(this.isEnabled)
       .onClick((): void => this.onPress())
   }
 }

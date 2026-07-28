@@ -20,6 +20,9 @@ import {
 } from '../models/NavigationModels';
 import { appStore, AppStore } from '../stores/AppStore';
 import { PrivacyContent } from './Privacy';
+import { CoinPage } from './Coin';
+import { RandomNumberPage } from './RandomNumber';
+import { YesNoPage } from './YesNo';
 
 const HOME_TOOLS: HomeToolItem[] = [
   {
@@ -267,6 +270,27 @@ struct Index {
   private destination(name: string, _param: object) {
     if (name === AppRoute.PRIVACY) {
       PrivacyContent({
+        colors: this.theme(),
+        onBack: (): void => {
+          this.pathStack.pop();
+        }
+      })
+    } else if (name === AppRoute.YES_NO) {
+      YesNoPage({
+        colors: this.theme(),
+        onBack: (): void => {
+          this.pathStack.pop();
+        }
+      })
+    } else if (name === AppRoute.COIN) {
+      CoinPage({
+        colors: this.theme(),
+        onBack: (): void => {
+          this.pathStack.pop();
+        }
+      })
+    } else if (name === AppRoute.RANDOM_NUMBER) {
+      RandomNumberPage({
         colors: this.theme(),
         onBack: (): void => {
           this.pathStack.pop();

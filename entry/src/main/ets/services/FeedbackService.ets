@@ -1,4 +1,3 @@
-import { vibrator } from '@kit.SensorServiceKit';
 import { AppStore, appStore } from '../stores/AppStore';
 
 export class FeedbackService {
@@ -9,23 +8,13 @@ export class FeedbackService {
   }
 
   async impact(duration: number = 35): Promise<boolean> {
-    if (!this.store.settings.vibrationEnabled) {
+    if (!this.store.settings.vibrationEnabled || duration <= 0) {
       return false;
     }
-    try {
-      await vibrator.startVibration(
-        {
-          type: 'time',
-          duration: duration
-        },
-        {
-          usage: 'touch'
-        }
-      );
-      return true;
-    } catch {
-      return false;
-    }
+    // API 24's vibrator service requires a manifest permission. This project
+    // deliberately ships with zero permission declarations, so haptics
+    // degrade without affecting the decision result.
+    return false;
   }
 }
 

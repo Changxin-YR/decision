@@ -5,7 +5,7 @@ export struct AppInput {
   @Link value: string;
   @Prop placeholder: string = '';
   @Prop error: string = '';
-  @Prop enabled: boolean = true;
+  @Prop isEnabled: boolean = true;
   @Prop colors: ThemeTokens;
   @State private focused: boolean = false;
 
@@ -24,7 +24,7 @@ export struct AppInput {
           color: this.error.length > 0 ? this.colors.error :
             (this.focused ? this.colors.accent : this.colors.border)
         })
-        .enabled(this.enabled)
+        .enabled(this.isEnabled)
         .onFocus((): void => {
           this.focused = true;
         })
