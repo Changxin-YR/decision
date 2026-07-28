@@ -5,6 +5,7 @@ import { ThemeTokens } from '../../constants/DesignTokens';
 export struct CoinView {
   @Prop rotation: number = 0;
   @Prop side: CoinSide = CoinSide.HEADS;
+  @Prop revealed: boolean = false;
   @Prop colors: ThemeTokens;
 
   build() {
@@ -15,7 +16,7 @@ export struct CoinView {
         .fill('#E7B83B')
         .stroke('#C68E19')
         .strokeWidth(8)
-      Text(this.side === CoinSide.HEADS ? '正' : '反')
+      Text(this.revealed ? (this.side === CoinSide.HEADS ? '正' : '反') : '？')
         .fontSize(66)
         .fontWeight(FontWeight.Bold)
         .fontColor('#FFF8DC')

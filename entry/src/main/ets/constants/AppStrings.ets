@@ -24,4 +24,28 @@ export class AppStrings {
   static readonly COIN_GUIDE: string = '点击硬币开始';
   static readonly EMPTY_HISTORY: string = '还没有保存过决定';
   static readonly APP_VERSION: string = '做个决定 · 1.0.0';
+  static readonly HEADS: string = '正面';
+  static readonly TAILS: string = '反面';
+  static readonly TOSS: string = '抛一次';
+  static readonly FLIPPING: string = '翻转中…';
+  static readonly RESET_STATS: string = '重置统计';
+  static readonly SAVE_RESULT: string = '保存结果';
+  static readonly RESULT_SAVED: string = '结果已保存';
+  static readonly OPTIONS: string = '选项';
+  static readonly SAVE_TEMPLATE: string = '保存为模板';
+  static readonly START_WHEEL: string = '开始转动';
+  static readonly WHEEL_RUNNING: string = '转动中…';
+  static readonly WHEEL_WAIT: string = '转动中，请稍候';
+  static readonly WHEEL_FAIR: string = '结果在动画开始前已经公平确定';
+  static readonly FEEDBACK: string = '反馈';
+  static readonly VIBRATION: string = '振动反馈';
+  static readonly SOUND: string = '音效';
+  static readonly THEME: string = '主题';
+  static readonly DATA: string = '历史与数据';
+  static readonly ABOUT: string = '关于';
+  static readonly LOCAL_SETTINGS: string = '所有偏好只保存在本机';
+  static readonly AUTO_SAVE: string = '自动保存历史';
+  static readonly PRIVACY_DESCRIPTION: string = '隐私说明';
+  static readonly USER_GUIDE: string =
+    '使用说明：选择一种工具，按页面提示输入或触摸，即可得到公平随机结果。';
 }

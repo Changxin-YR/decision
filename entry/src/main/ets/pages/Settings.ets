@@ -124,34 +124,34 @@ export struct SettingsPage {
   build() {
     Column({ space: AppSpacing.MD }) {
       PageHeader({
-        title: '设置',
-        subtitle: '所有偏好只保存在本机',
+        title: AppStrings.SETTINGS,
+        subtitle: AppStrings.LOCAL_SETTINGS,
         colors: this.colors,
         onBack: (): void => this.onBack()
       })
       Scroll() {
         Column({ space: AppSpacing.MD }) {
-          Text('反馈')
+          Text(AppStrings.FEEDBACK)
             .width('100%')
             .fontSize(AppFontSizes.HEADING)
             .fontWeight(FontWeight.Bold)
             .fontColor(this.colors.text)
           this.settingSwitch(
-            '振动反馈',
+            AppStrings.VIBRATION,
             this.store.settings.vibrationEnabled,
             (value: boolean): void => {
               this.store.updateSettings({ vibrationEnabled: value });
             }
           )
           this.settingSwitch(
-            '音效',
+            AppStrings.SOUND,
             this.store.settings.soundEnabled,
             (value: boolean): void => {
               this.store.updateSettings({ soundEnabled: value });
             }
           )
 
-          Text('主题')
+          Text(AppStrings.THEME)
             .width('100%')
             .fontSize(AppFontSizes.HEADING)
             .fontWeight(FontWeight.Bold)
@@ -181,13 +181,13 @@ export struct SettingsPage {
           }
           .width('100%')
 
-          Text('历史与数据')
+          Text(AppStrings.DATA)
             .width('100%')
             .fontSize(AppFontSizes.HEADING)
             .fontWeight(FontWeight.Bold)
             .fontColor(this.colors.text)
           this.settingSwitch(
-            '自动保存历史',
+            AppStrings.AUTO_SAVE,
             this.store.settings.autoSaveHistory,
             (value: boolean): void => {
               this.store.updateSettings({ autoSaveHistory: value });
@@ -197,14 +197,14 @@ export struct SettingsPage {
           this.actionRow('清除自定义模板', false, (): void => this.clearTemplatesDialog.open())
           this.actionRow('清除全部数据', true, (): void => this.clearAllDialog.open())
 
-          Text('关于')
+          Text(AppStrings.ABOUT)
             .width('100%')
             .fontSize(AppFontSizes.HEADING)
             .fontWeight(FontWeight.Bold)
             .fontColor(this.colors.text)
           this.infoRow(AppStrings.APP_VERSION)
-          this.actionRow('隐私说明', false, (): void => this.onPrivacy())
-          Text('使用说明：选择一种工具，按页面提示输入或触摸，即可得到公平随机结果。')
+          this.actionRow(AppStrings.PRIVACY_DESCRIPTION, false, (): void => this.onPrivacy())
+          Text(AppStrings.USER_GUIDE)
             .width('100%')
             .fontSize(AppFontSizes.CAPTION)
             .fontColor(this.colors.subtext)

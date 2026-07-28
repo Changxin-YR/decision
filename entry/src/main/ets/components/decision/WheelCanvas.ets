@@ -43,12 +43,15 @@ export struct WheelCanvas {
       this.context.translate(center, center);
       this.context.rotate(start + sector / 2);
       this.context.fillStyle = '#FFFFFF';
-      this.context.font = this.options.length > 8 ? '22px sans-serif' : '26px sans-serif';
+      const crowded: boolean = this.options.length > 8;
+      this.context.font = crowded ? '15px sans-serif' : '26px sans-serif';
       this.context.textAlign = 'center';
       this.context.textBaseline = 'middle';
-      const label: string = this.options[index].length > 8 ?
-        `${this.options[index].slice(0, 7)}…` : this.options[index];
-      this.context.fillText(label, radius * 0.62, 0, radius * 0.58);
+      const maxChars: number = crowded ? 5 : 8;
+      const label: string = this.options[index].length > maxChars ?
+        `${this.options[index].slice(0, maxChars - 1)}…` : this.options[index];
+      this.context.fillText(label, radius * 0.66, 0,
+        crowded ? radius * 0.38 : radius * 0.58);
       this.context.restore();
     }
   }

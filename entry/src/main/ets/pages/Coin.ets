@@ -3,6 +3,7 @@ import { PageHeader } from '../components/common/PageHeader';
 import { ResultSheet } from '../components/common/ResultSheet';
 import { CoinView } from '../components/decision/CoinView';
 import { AppSpacing, ThemeTokens } from '../constants/DesignTokens';
+import { AppStrings } from '../constants/AppStrings';
 import { RandomService } from '../domain/random/RandomService';
 import { CoinSession } from '../domain/state/SimpleDecisionState';
 import { CoinSide, HistoryRecord, ToolType } from '../models/AppModels';
@@ -21,6 +22,7 @@ export struct CoinPage {
   @State private running: boolean = false;
   @State private saved: boolean = false;
   @State private result: string = '';
+  @State private revealed: boolean = false;
   private session: CoinSession = new CoinSession();
   private timerId: number = -1;
   private unsubscribe: (() => void) | null = null;
@@ -56,6 +58,7 @@ export struct CoinPage {
       return;
     }
     this.running = true;
+    this.revealed = false;
     this.result = '';
     this.saved = false;
     const halfTurns: number = next === CoinSide.HEADS ? 10 : 11;
@@ -68,14 +71,15 @@ export struct CoinPage {
         return;
       }
       this.side = next;
+      this.revealed = true;
       this.running = false;
-      this.result = next === CoinSide.HEADS ? '正面' : '反面';
+      this.result = next === CoinSide.HEADS ? AppStrings.HEADS : AppStrings.TAILS;
       this.record = {
         id: `${Date.now()}`,
         toolType: ToolType.COIN,
-        title: '抛硬币',
-        options: ['正面', '反面'],
-        result: next === CoinSide.HEADS ? '正面' : '反面',
+        title: AppStrings.COIN,
+        options: [AppStrings.HEADS, AppStrings.TAILS],
+        result: this.result,
         createdAt: new Date().toISOString()
       };
       feedbackService.impact();
@@ -96,22 +100,27 @@ export struct CoinPage {
     Stack() {
       Column({ space: AppSpacing.LG }) {
         PageHeader({
-          title: '抛硬币',
-          subtitle: `正面 ${this.session.headsCount} · 反面 ${this.session.tailsCount}`,
+          title: AppStrings.COIN,
+          subtitle: `${AppStrings.HEADS} ${this.session.headsCount} · ${AppStrings.TAILS} ${this.session.tailsCount}`,
           colors: this.colors,
           onBack: (): void => this.onBack()
         })
         Blank()
-        CoinView({ rotation: this.rotation, side: this.side, colors: this.colors })
+        CoinView({
+          rotation: this.rotation,
+          side: this.side,
+          revealed: this.revealed,
+          colors: this.colors
+        })
         Blank()
         AppButton({
-          label: this.running ? '翻转中…' : '抛一次',
+          label: this.running ? AppStrings.FLIPPING : AppStrings.TOSS,
           isEnabled: !this.running,
           onPress: (): void => this.toss()
         })
         if (this.record !== null && !this.running) {
           AppButton({
-            label: this.saved ? '已保存' : '保存结果',
+            label: this.saved ? AppStrings.SAVED : AppStrings.SAVE_RESULT,
             variant: AppButtonVariant.SECONDARY,
             isEnabled: !this.saved,
             onPress: (): void => {
@@ -120,7 +129,7 @@ export struct CoinPage {
           })
         }
         AppButton({
-          label: '重置统计',
+          label: AppStrings.RESET_STATS,
           variant: AppButtonVariant.TEXT,
           isEnabled: !this.running,
           onPress: (): void => {
@@ -128,6 +137,7 @@ export struct CoinPage {
             this.record = null;
             this.saved = false;
             this.result = '';
+            this.revealed = false;
           }
         })
       }

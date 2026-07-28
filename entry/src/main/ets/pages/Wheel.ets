@@ -220,8 +220,8 @@ export struct WheelPage {
       Scroll() {
         Column({ space: AppSpacing.LG }) {
           PageHeader({
-            title: this.initialTitle.length > 0 ? this.initialTitle : '幸运转盘',
-            subtitle: this.running ? '转动中，请稍候' : '结果在动画开始前已经公平确定',
+            title: this.initialTitle.length > 0 ? this.initialTitle : AppStrings.WHEEL,
+            subtitle: this.running ? AppStrings.WHEEL_WAIT : AppStrings.WHEEL_FAIR,
             colors: this.colors,
             onBack: (): void => {
               if (!this.running) {
@@ -239,12 +239,12 @@ export struct WheelPage {
           })
 
           AppButton({
-            label: this.running ? '转动中…' : '开始转动',
+            label: this.running ? AppStrings.WHEEL_RUNNING : AppStrings.START_WHEEL,
             isEnabled: !this.running,
             onPress: (): void => this.spin()
           })
 
-          Text('选项')
+          Text(AppStrings.OPTIONS)
             .width('100%')
             .fontSize(AppFontSizes.HEADING)
             .fontWeight(FontWeight.Bold)
@@ -268,14 +268,14 @@ export struct WheelPage {
           }
 
           AppButton({
-            label: '保存为模板',
+            label: AppStrings.SAVE_TEMPLATE,
             variant: AppButtonVariant.SECONDARY,
             isEnabled: !this.running,
             onPress: (): void => this.openTemplateDialog()
           })
           if (this.result.length > 0) {
             AppButton({
-              label: this.saved ? '结果已保存' : '保存结果',
+              label: this.saved ? AppStrings.RESULT_SAVED : AppStrings.SAVE_RESULT,
               variant: AppButtonVariant.SECONDARY,
               isEnabled: !this.saved,
               onPress: (): void => {
