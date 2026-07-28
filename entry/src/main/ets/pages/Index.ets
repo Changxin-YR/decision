@@ -22,6 +22,7 @@ import { decisionDraftStore } from '../stores/DecisionDraftStore';
 import { PrivacyContent } from './Privacy';
 import { CoinPage } from './Coin';
 import { DrawPage } from './Draw';
+import { FingerSelectPage } from './FingerSelect';
 import { RandomNumberPage } from './RandomNumber';
 import { YesNoPage } from './YesNo';
 import { WheelPage } from './Wheel';
@@ -291,6 +292,13 @@ struct Index {
           colors: this.theme(),
           initialTitle: decisionDraftStore.title,
           initialOptions: decisionDraftStore.options,
+          onBack: (): void => {
+            this.pathStack.pop();
+          }
+        })
+      } else if (name === AppRoute.FINGER_SELECT) {
+        FingerSelectPage({
+          colors: this.theme(),
           onBack: (): void => {
             this.pathStack.pop();
           }
