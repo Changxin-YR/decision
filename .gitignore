@@ -1,5 +1,6 @@
 # Local brainstorming companion
 .superpowers/
+.worktrees/
 
 # HarmonyOS / DevEco Studio build output
 .hvigor/
@@ -16,4 +17,3 @@ local.properties
 *.hsp
 *.hap
 *.app
-
