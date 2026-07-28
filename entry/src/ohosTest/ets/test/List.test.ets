@@ -9,6 +9,7 @@ import randomServiceTest from './RandomService.test';
 import responsiveLayoutTest from './ResponsiveLayout.test';
 import simpleDecisionStateTest from './SimpleDecisionState.test';
 import themeResolverTest from './ThemeResolver.test';
+import timeFormatterTest from './TimeFormatter.test';
 import validationTest from './Validation.test';
 import wheelGeometryTest from './WheelGeometry.test';
 import wheelSessionTest from './WheelSession.test';
@@ -25,6 +26,7 @@ export default function testsuite(): void {
   responsiveLayoutTest();
   simpleDecisionStateTest();
   themeResolverTest();
+  timeFormatterTest();
   validationTest();
   wheelGeometryTest();
   wheelSessionTest();

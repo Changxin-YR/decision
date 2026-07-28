@@ -4,6 +4,7 @@ import { HistoryRepository } from '../../../main/ets/data/repositories/HistoryRe
 import { SettingsRepository } from '../../../main/ets/data/repositories/SettingsRepository';
 import { TemplateRepository } from '../../../main/ets/data/repositories/TemplateRepository';
 import {
+  HistoryRecord,
   ThemeMode,
   ToolType
 } from '../../../main/ets/models/AppModels';
@@ -117,6 +118,43 @@ export default function appStoreTest(): void {
       expect(deleted).assertTrue();
       expect(store.templates.length).assertEqual(1);
       expect(store.templates[0].name).assertEqual('二');
+    });
+
+    it('clearHistoryDoesNotChangeTemplates', 0, async () => {
+      const store: AppStore = createStore();
+      await store.initialize();
+      await store.createCustomTemplate('模板', ToolType.DRAW, ['甲', '乙']);
+      const record: HistoryRecord = {
+        id: 'history-1',
+        toolType: ToolType.DRAW,
+        title: '抽签',
+        options: ['甲', '乙'],
+        result: '甲',
+        createdAt: new Date().toISOString()
+      };
+      await store.saveHistoryRecord(record);
+
+      expect(await store.clearHistory()).assertTrue();
+      expect(store.history.length).assertEqual(0);
+      expect(store.templates.length).assertEqual(1);
+    });
+
+    it('clearTemplatesDoesNotChangeHistory', 0, async () => {
+      const store: AppStore = createStore();
+      await store.initialize();
+      await store.createCustomTemplate('模板', ToolType.WHEEL, ['甲', '乙']);
+      await store.saveHistoryRecord({
+        id: 'history-2',
+        toolType: ToolType.WHEEL,
+        title: '转盘',
+        options: ['甲', '乙'],
+        result: '乙',
+        createdAt: new Date().toISOString()
+      });
+
+      expect(await store.clearTemplates()).assertTrue();
+      expect(store.templates.length).assertEqual(0);
+      expect(store.history.length).assertEqual(1);
     });
   });
 }

@@ -1,4 +1,10 @@
-import { AppFontSizes, AppRadii, ThemeTokens } from '../../constants/DesignTokens';
+import {
+  AppFontSizes,
+  AppRadii,
+  ThemeResolver,
+  ThemeTokens
+} from '../../constants/DesignTokens';
+import { ThemeMode } from '../../models/AppModels';
 import { AppButton, AppButtonVariant } from './AppButton';
 
 @CustomDialog
@@ -7,7 +13,7 @@ export struct ConfirmDialog {
   title: string = '确认操作';
   message: string = '';
   confirmLabel: string = '确认';
-  colors: ThemeTokens;
+  colors: ThemeTokens = ThemeResolver.resolve(ThemeMode.SYSTEM, false);
   onConfirm: () => void = (): void => {
   };
 
@@ -22,7 +28,7 @@ export struct ConfirmDialog {
         .width('100%')
         .fontSize(AppFontSizes.BODY)
         .fontColor(this.colors.subtext)
-      Row({ space: 12 }) {
+      Column({ space: 12 }) {
         AppButton({
           label: '取消',
           variant: AppButtonVariant.SECONDARY,

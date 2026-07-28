@@ -10,6 +10,7 @@ import { PRESET_TEMPLATES } from '../constants/PresetTemplates';
 import { AppStrings } from '../constants/AppStrings';
 import {
   DecisionTemplate,
+  HistoryRecord,
   ToolType
 } from '../models/AppModels';
 import {
@@ -23,7 +24,9 @@ import { PrivacyContent } from './Privacy';
 import { CoinPage } from './Coin';
 import { DrawPage } from './Draw';
 import { FingerSelectPage } from './FingerSelect';
+import { HistoryPage } from './History';
 import { RandomNumberPage } from './RandomNumber';
+import { SettingsPage } from './Settings';
 import { YesNoPage } from './YesNo';
 import { WheelPage } from './Wheel';
 
@@ -301,6 +304,39 @@ struct Index {
           colors: this.theme(),
           onBack: (): void => {
             this.pathStack.pop();
+          }
+        })
+      } else if (name === AppRoute.HISTORY) {
+        HistoryPage({
+          colors: this.theme(),
+          onBack: (): void => {
+            this.pathStack.pop();
+          },
+          onUseAgain: (record: HistoryRecord): void => {
+            decisionDraftStore.set(record.title, record.toolType, record.options);
+            if (record.toolType === ToolType.WHEEL) {
+              this.pathStack.pushPathByName(AppRoute.WHEEL, undefined);
+            } else if (record.toolType === ToolType.DRAW) {
+              this.pathStack.pushPathByName(AppRoute.DRAW, undefined);
+            } else if (record.toolType === ToolType.COIN) {
+              this.pathStack.pushPathByName(AppRoute.COIN, undefined);
+            } else if (record.toolType === ToolType.YES_NO) {
+              this.pathStack.pushPathByName(AppRoute.YES_NO, undefined);
+            } else if (record.toolType === ToolType.NUMBER) {
+              this.pathStack.pushPathByName(AppRoute.RANDOM_NUMBER, undefined);
+            } else {
+              this.pathStack.pushPathByName(AppRoute.FINGER_SELECT, undefined);
+            }
+          }
+        })
+      } else if (name === AppRoute.SETTINGS) {
+        SettingsPage({
+          colors: this.theme(),
+          onBack: (): void => {
+            this.pathStack.pop();
+          },
+          onPrivacy: (): void => {
+            this.pathStack.pushPathByName(AppRoute.PRIVACY, undefined);
           }
         })
       } else if (name === AppRoute.YES_NO) {
