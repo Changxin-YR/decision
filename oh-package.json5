@@ -4,5 +4,6 @@
   "dependencies": {
   },
   "devDependencies": {
+    "@ohos/hypium": "file:./vendor/hypium"
   }
 }
