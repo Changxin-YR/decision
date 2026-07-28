@@ -2,6 +2,7 @@ import appLifecycleBusTest from './AppLifecycleBus.test';
 import appStoreTest from './AppStore.test';
 import historyRepositoryTest from './HistoryRepository.test';
 import jsonCodecTest from './JsonCodec.test';
+import optionEditorStateTest from './OptionEditorState.test';
 import randomServiceTest from './RandomService.test';
 import responsiveLayoutTest from './ResponsiveLayout.test';
 import simpleDecisionStateTest from './SimpleDecisionState.test';
@@ -14,6 +15,7 @@ export default function testsuite(): void {
   appLifecycleBusTest();
   jsonCodecTest();
   historyRepositoryTest();
+  optionEditorStateTest();
   randomServiceTest();
   responsiveLayoutTest();
   simpleDecisionStateTest();

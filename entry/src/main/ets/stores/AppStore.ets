@@ -7,8 +7,10 @@ import {
   createDefaultSettings,
   DecisionTemplate,
   HistoryRecord,
-  ThemeMode
+  ThemeMode,
+  ToolType
 } from '../models/AppModels';
+import { OptionValidator } from '../domain/validation/OptionValidator';
 
 export interface AppSettingsPatch {
   soundEnabled?: boolean;
@@ -66,6 +68,40 @@ export class AppStore {
       this.templates = next;
     }
     return saved;
+  }
+
+  async createCustomTemplate(
+    name: string,
+    toolType: ToolType,
+    options: readonly string[]
+  ): Promise<boolean> {
+    if (toolType !== ToolType.WHEEL && toolType !== ToolType.DRAW) {
+      return false;
+    }
+    if (!OptionValidator.validateTemplateName(name).valid ||
+      !OptionValidator.validate(options).valid) {
+      return false;
+    }
+    const template: DecisionTemplate = {
+      id: `template-${Date.now()}-${this.templates.length}`,
+      name: name.trim(),
+      toolType: toolType,
+      options: options.map((option: string): string => option.trim()),
+      createdAt: new Date().toISOString(),
+      builtIn: false
+    };
+    return this.saveTemplates(this.templates.concat([template]));
+  }
+
+  async deleteCustomTemplate(id: string): Promise<boolean> {
+    const target: DecisionTemplate | undefined =
+      this.templates.find((template: DecisionTemplate): boolean => template.id === id);
+    if (target === undefined || target.builtIn) {
+      return false;
+    }
+    const next: DecisionTemplate[] =
+      this.templates.filter((template: DecisionTemplate): boolean => template.id !== id);
+    return this.saveTemplates(next);
   }
 
   async saveHistoryRecord(record: HistoryRecord): Promise<boolean> {

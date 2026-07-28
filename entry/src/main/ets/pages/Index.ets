@@ -231,6 +231,19 @@ struct Index {
                 }
                 .layoutWeight(1)
                 .alignItems(HorizontalAlign.Start)
+                if (!template.builtIn) {
+                  Button('删除', { type: ButtonType.Normal })
+                    .fontSize(AppFontSizes.CAPTION)
+                    .fontColor(this.theme().error)
+                    .backgroundColor('#00000000')
+                    .onClick(async (): Promise<void> => {
+                      const deleted: boolean =
+                        await this.store.deleteCustomTemplate(template.id);
+                      this.getUIContext().getPromptAction().showToast({
+                        message: deleted ? '模板已删除' : '删除失败，请重试'
+                      });
+                    })
+                }
                 Text('›')
                   .fontSize(26)
                   .fontColor(this.theme().subtext)
