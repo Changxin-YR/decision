@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "离线单机决策工具"
+    },
+    {
+      "name": "entry_ability_desc",
+      "value": "做个决定主界面"
+    },
+    {
+      "name": "entry_ability_label",
+      "value": "做个决定"
+    }
+  ]
+}

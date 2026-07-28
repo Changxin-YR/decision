@@ -1,0 +1,16 @@
+{
+  "name": "decision-harmony",
+  "version": "1.0.0",
+  "private": true,
+  "ohos": {
+    "org": "huawei",
+    "buildTool": "hvigor",
+    "directoryLevel": "project"
+  },
+  "description": "做个决定 API 24 原生鸿蒙应用",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@ohos/hvigor": "6.24.3",
+    "@ohos/hvigor-ohos-plugin": "6.24.3"
+  }
+}
