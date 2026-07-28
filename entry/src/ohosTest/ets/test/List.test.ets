@@ -9,6 +9,7 @@ import simpleDecisionStateTest from './SimpleDecisionState.test';
 import themeResolverTest from './ThemeResolver.test';
 import validationTest from './Validation.test';
 import wheelGeometryTest from './WheelGeometry.test';
+import wheelSessionTest from './WheelSession.test';
 
 export default function testsuite(): void {
   appStoreTest();
@@ -22,4 +23,5 @@ export default function testsuite(): void {
   themeResolverTest();
   validationTest();
   wheelGeometryTest();
+  wheelSessionTest();
 }

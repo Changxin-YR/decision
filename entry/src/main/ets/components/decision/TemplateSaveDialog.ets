@@ -83,7 +83,7 @@ export struct TemplateSaveDialog {
           .fontSize(AppFontSizes.CAPTION)
           .fontColor(this.colors.error)
       }
-      Row({ space: 12 }) {
+      Column({ space: 12 }) {
         AppButton({
           label: '取消',
           variant: AppButtonVariant.SECONDARY,

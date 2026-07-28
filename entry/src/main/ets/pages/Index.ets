@@ -14,7 +14,6 @@ import {
 } from '../models/AppModels';
 import {
   AppRoute,
-  DecisionPageParams,
   HomeToolItem,
   ResponsiveLayout
 } from '../models/NavigationModels';
@@ -23,6 +22,7 @@ import { PrivacyContent } from './Privacy';
 import { CoinPage } from './Coin';
 import { RandomNumberPage } from './RandomNumber';
 import { YesNoPage } from './YesNo';
+import { WheelPage } from './Wheel';
 
 const HOME_TOOLS: HomeToolItem[] = [
   {
@@ -82,6 +82,8 @@ struct Index {
   @State private store: AppStore = appStore;
   @State private contentWidth: number = 360;
   @State private systemDark: boolean = false;
+  @State private currentDecisionTitle: string = '';
+  @State private currentDecisionOptions: string[] = [];
 
   private theme(): ThemeTokens {
     return ThemeResolver.resolve(this.store.settings.themeMode, this.systemDark);
@@ -92,29 +94,17 @@ struct Index {
   }
 
   private openTool(tool: HomeToolItem, title: string = ''): void {
-    const params: DecisionPageParams = {
-      title: title,
-      toolType: tool.toolType,
-      options: []
-    };
-    this.pathStack.pushPath({
-      name: tool.route,
-      param: params
-    });
+    this.currentDecisionTitle = title;
+    this.currentDecisionOptions = [];
+    this.pathStack.pushPathByName(tool.route, undefined);
   }
 
   private openTemplate(template: DecisionTemplate): void {
-    const params: DecisionPageParams = {
-      title: template.name,
-      toolType: template.toolType,
-      options: Array.from(template.options)
-    };
+    this.currentDecisionTitle = template.name;
+    this.currentDecisionOptions = Array.from(template.options);
     const route: AppRoute = template.toolType === ToolType.WHEEL ?
       AppRoute.WHEEL : AppRoute.DRAW;
-    this.pathStack.pushPath({
-      name: route,
-      param: params
-    });
+    this.pathStack.pushPathByName(route, undefined);
   }
 
   @Builder
@@ -280,57 +270,69 @@ struct Index {
   }
 
   @Builder
-  private destination(name: string, _param: object) {
-    if (name === AppRoute.PRIVACY) {
-      PrivacyContent({
-        colors: this.theme(),
-        onBack: (): void => {
-          this.pathStack.pop();
-        }
-      })
-    } else if (name === AppRoute.YES_NO) {
-      YesNoPage({
-        colors: this.theme(),
-        onBack: (): void => {
-          this.pathStack.pop();
-        }
-      })
-    } else if (name === AppRoute.COIN) {
-      CoinPage({
-        colors: this.theme(),
-        onBack: (): void => {
-          this.pathStack.pop();
-        }
-      })
-    } else if (name === AppRoute.RANDOM_NUMBER) {
-      RandomNumberPage({
-        colors: this.theme(),
-        onBack: (): void => {
-          this.pathStack.pop();
-        }
-      })
-    } else {
-      Column({ space: 18 }) {
-        Text('‹')
-          .fontSize(34)
-          .fontColor(this.theme().text)
-          .onClick((): void => {
+  destination(name: string) {
+    NavDestination() {
+      if (name === AppRoute.PRIVACY) {
+        PrivacyContent({
+          colors: this.theme(),
+          onBack: (): void => {
             this.pathStack.pop();
-          })
-        Text(name)
-          .fontSize(AppFontSizes.TITLE)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.theme().text)
-        Text('功能页面正在接入，当前阶段已完成原生导航。')
-          .fontSize(AppFontSizes.BODY)
-          .fontColor(this.theme().subtext)
+          }
+        })
+      } else if (name === AppRoute.WHEEL) {
+        WheelPage({
+          colors: this.theme(),
+          initialTitle: this.currentDecisionTitle,
+          initialOptions: this.currentDecisionOptions,
+          onBack: (): void => {
+            this.pathStack.pop();
+          }
+        })
+      } else if (name === AppRoute.YES_NO) {
+        YesNoPage({
+          colors: this.theme(),
+          onBack: (): void => {
+            this.pathStack.pop();
+          }
+        })
+      } else if (name === AppRoute.COIN) {
+        CoinPage({
+          colors: this.theme(),
+          onBack: (): void => {
+            this.pathStack.pop();
+          }
+        })
+      } else if (name === AppRoute.RANDOM_NUMBER) {
+        RandomNumberPage({
+          colors: this.theme(),
+          onBack: (): void => {
+            this.pathStack.pop();
+          }
+        })
+      } else {
+        Column({ space: 18 }) {
+          Text('‹')
+            .fontSize(34)
+            .fontColor(this.theme().text)
+            .onClick((): void => {
+              this.pathStack.pop();
+            })
+          Text(name)
+            .fontSize(AppFontSizes.TITLE)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.theme().text)
+          Text('功能页面正在接入，当前阶段已完成原生导航。')
+            .fontSize(AppFontSizes.BODY)
+            .fontColor(this.theme().subtext)
+        }
+        .width('100%')
+        .height('100%')
+        .padding(20)
+        .alignItems(HorizontalAlign.Start)
+        .backgroundColor(this.theme().background)
       }
-      .width('100%')
-      .height('100%')
-      .padding(20)
-      .alignItems(HorizontalAlign.Start)
-      .backgroundColor(this.theme().background)
     }
+    .hideTitleBar(true)
   }
 
   build() {
