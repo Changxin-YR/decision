@@ -1,19 +1,16 @@
 import { AppButton, AppButtonVariant } from '../components/common/AppButton';
 import { PageHeader } from '../components/common/PageHeader';
 import { ResultSheet } from '../components/common/ResultSheet';
+import { DrawTube } from '../components/decision/DrawTube';
 import { OptionsEditor } from '../components/decision/OptionsEditor';
 import { TemplateSaveDialog } from '../components/decision/TemplateSaveDialog';
-import { WheelCanvas } from '../components/decision/WheelCanvas';
 import {
   AppFontSizes,
   AppSpacing,
   ThemeTokens
 } from '../constants/DesignTokens';
+import { DrawSession } from '../domain/state/DrawSession';
 import { OptionValidator } from '../domain/validation/OptionValidator';
-import {
-  WheelSession,
-  WheelSpin
-} from '../domain/state/WheelSession';
 import {
   HistoryRecord,
   ToolType
@@ -25,20 +22,23 @@ import { appStore } from '../stores/AppStore';
 import { decisionDraftStore } from '../stores/DecisionDraftStore';
 
 @Component
-export struct WheelPage {
+export struct DrawPage {
   @Prop colors: ThemeTokens;
   @Prop initialTitle: string = '';
   @Prop initialOptions: string[] = [];
   onBack: () => void = (): void => {
   };
   @State private optionsVersion: number = 0;
+  @State private allowRepeat: boolean = false;
   @State private error: string = '';
-  @State private rotation: number = 0;
   @State private running: boolean = false;
   @State private result: string = '';
   @State private saved: boolean = false;
-  private session: WheelSession = new WheelSession();
-  private timerId: number = -1;
+  @State private remainingCount: number = 0;
+  @State private shakeAngle: number = 0;
+  @State private stickOffset: number = 0;
+  @State private liftedLabel: string = '';
+  private timerIds: number[] = [];
   private unsubscribe: (() => void) | null = null;
   private record: HistoryRecord | null = null;
   private templateDialog: CustomDialogController = new CustomDialogController({
@@ -47,7 +47,7 @@ export struct WheelPage {
       onSave: async (name: string): Promise<boolean> => {
         return appStore.createCustomTemplate(
           name,
-          ToolType.WHEEL,
+          ToolType.DRAW,
           this.optionTexts()
         );
       }
@@ -60,11 +60,14 @@ export struct WheelPage {
     if (decisionDraftStore.options.length < 2) {
       decisionDraftStore.set(
         this.initialTitle,
-        ToolType.WHEEL,
+        ToolType.DRAW,
         this.initialOptions.length >= 2 ? this.initialOptions : ['', '']
       );
     }
     this.optionsVersion++;
+    const activeSession: DrawSession | null = decisionDraftStore.currentDrawSession();
+    this.remainingCount = activeSession === null ?
+      decisionDraftStore.options.length : activeSession.remaining.length;
     if (this.unsubscribe === null) {
       this.unsubscribe = appLifecycleBus.subscribe((background: boolean): void => {
         if (background) {
@@ -86,39 +89,68 @@ export struct WheelPage {
     return Array.from(decisionDraftStore.options);
   }
 
+  private syncDraft(): void {
+    decisionDraftStore.updateOptions(this.optionTexts());
+  }
+
+  private invalidateSession(): void {
+    this.syncDraft();
+    this.result = '';
+    this.remainingCount = decisionDraftStore.options.length;
+  }
+
   private updateOption(id: string, text: string): void {
     decisionDraftStore.updateOption(id, text);
     this.optionsVersion++;
     this.error = '';
+    this.invalidateSession();
   }
 
   private removeOption(id: string): void {
     decisionDraftStore.removeOption(id);
     this.optionsVersion++;
     this.error = '';
+    this.invalidateSession();
   }
 
   private moveOption(from: number, to: number): void {
     decisionDraftStore.moveOption(from, to);
     this.optionsVersion++;
+    this.invalidateSession();
   }
 
   private addOption(): void {
     decisionDraftStore.addOption();
     this.optionsVersion++;
+    this.invalidateSession();
+  }
+
+  private clearTimers(): void {
+    this.timerIds.forEach((timerId: number): void => clearTimeout(timerId));
+    this.timerIds = [];
   }
 
   private cancel(): void {
-    decisionDraftStore.updateOptions(this.optionTexts());
-    if (this.timerId >= 0) {
-      clearTimeout(this.timerId);
-      this.timerId = -1;
+    this.syncDraft();
+    this.clearTimers();
+    const session: DrawSession | null = decisionDraftStore.currentDrawSession();
+    if (session !== null) {
+      session.cancel();
     }
-    this.session.cancel();
     this.running = false;
+    this.shakeAngle = 0;
+    this.stickOffset = 0;
+    this.liftedLabel = '';
   }
 
-  private spin(): void {
+  private ensureSession(values: string[]): DrawSession {
+    const session: DrawSession =
+      decisionDraftStore.getDrawSession(values, this.allowRepeat);
+    this.remainingCount = session.remaining.length;
+    return session;
+  }
+
+  private draw(): void {
     const validation = OptionValidator.validate(this.optionTexts());
     if (!validation.valid) {
       this.error = validation.message;
@@ -127,8 +159,11 @@ export struct WheelPage {
     const values: string[] =
       this.optionTexts().map((value: string): string => value.trim());
     decisionDraftStore.updateOptions(values);
-    const spin: WheelSpin | null = this.session.start(values);
-    if (spin === null) {
+    const session: DrawSession = this.ensureSession(values);
+    const pending: string | null = session.start();
+    if (pending === null) {
+      this.error = session.remaining.length === 0 ?
+        '所有选项已经抽取完成' : '';
       return;
     }
     this.error = '';
@@ -136,28 +171,38 @@ export struct WheelPage {
     this.result = '';
     this.saved = false;
     this.record = null;
-    soundService.play(SoundEffect.WHEEL);
-    const base: number = Math.ceil(this.rotation / 360) * 360;
-    this.getUIContext().animateTo({
-      duration: 3600,
-      curve: Curve.EaseOut
-    }, (): void => {
-      this.rotation = base + spin.targetAngle;
+    this.liftedLabel = pending;
+    this.stickOffset = 0;
+    soundService.play(SoundEffect.DRAW);
+    this.getUIContext().animateTo({ duration: 240, curve: Curve.EaseInOut }, (): void => {
+      this.shakeAngle = 7;
     });
-    this.timerId = setTimeout((): void => {
-      this.timerId = -1;
-      if (!this.session.complete()) {
+    this.timerIds.push(setTimeout((): void => {
+      this.getUIContext().animateTo({ duration: 260, curve: Curve.EaseInOut }, (): void => {
+        this.shakeAngle = -7;
+      });
+    }, 240));
+    this.timerIds.push(setTimeout((): void => {
+      this.getUIContext().animateTo({ duration: 650, curve: Curve.EaseOut }, (): void => {
+        this.shakeAngle = 0;
+        this.stickOffset = -96;
+      });
+    }, 500));
+    this.timerIds.push(setTimeout((): void => {
+      this.clearTimers();
+      if (!session.complete()) {
         return;
       }
       this.running = false;
-      this.result = spin.result;
+      this.result = pending;
+      this.remainingCount = session.remaining.length;
       this.record = {
         id: `${Date.now()}`,
-        toolType: ToolType.WHEEL,
+        toolType: ToolType.DRAW,
         title: this.initialTitle.trim().length > 0 ?
-          this.initialTitle.trim() : '幸运转盘',
+          this.initialTitle.trim() : '抽签',
         options: values,
-        result: spin.result,
+        result: pending,
         createdAt: new Date().toISOString()
       };
       feedbackService.impact();
@@ -165,7 +210,19 @@ export struct WheelPage {
       if (appStore.settings.autoSaveHistory) {
         this.save();
       }
-    }, 3600);
+    }, 1200));
+  }
+
+  private resetDraws(): void {
+    const session: DrawSession | null = decisionDraftStore.currentDrawSession();
+    if (session !== null) {
+      session.reset();
+      this.remainingCount = session.remaining.length;
+    }
+    this.result = '';
+    this.error = '';
+    this.liftedLabel = '';
+    this.stickOffset = 0;
   }
 
   private async save(): Promise<void> {
@@ -189,8 +246,9 @@ export struct WheelPage {
       Scroll() {
         Column({ space: AppSpacing.LG }) {
           PageHeader({
-            title: this.initialTitle.length > 0 ? this.initialTitle : '幸运转盘',
-            subtitle: this.running ? '转动中，请稍候' : '结果在动画开始前已经公平确定',
+            title: this.initialTitle.length > 0 ? this.initialTitle : '抽签',
+            subtitle: this.running ? '正在抽取，请稍候' :
+              (this.allowRepeat ? '允许重复抽取' : `剩余 ${this.remainingCount} 个选项`),
             colors: this.colors,
             onBack: (): void => {
               if (!this.running) {
@@ -199,19 +257,45 @@ export struct WheelPage {
             }
           })
 
-          WheelCanvas({
-            options: this.optionTexts().map((value: string): string => {
-              return value.trim().length > 0 ? value.trim() : '待填写';
-            }),
-            rotation: this.rotation,
-            colors: this.colors
+          Row() {
+            Text('允许重复')
+              .fontSize(AppFontSizes.BODY)
+              .fontColor(this.colors.text)
+            Blank()
+            Toggle({ type: ToggleType.Switch, isOn: this.allowRepeat })
+              .enabled(!this.running)
+              .onChange((value: boolean): void => {
+                this.allowRepeat = value;
+                this.invalidateSession();
+              })
+          }
+          .width('100%')
+
+          DrawTube({
+            colors: this.colors,
+            shakeAngle: this.shakeAngle,
+            stickOffset: this.stickOffset,
+            liftedLabel: this.liftedLabel
           })
 
-          AppButton({
-            label: this.running ? '转动中…' : '开始转动',
-            isEnabled: !this.running,
-            onPress: (): void => this.spin()
-          })
+          if (!this.allowRepeat && this.remainingCount === 0) {
+            Text('所有选项已经抽取完成')
+              .width('100%')
+              .fontSize(AppFontSizes.HEADING)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(this.colors.text)
+              .textAlign(TextAlign.Center)
+            AppButton({
+              label: '重新开始',
+              onPress: (): void => this.resetDraws()
+            })
+          } else {
+            AppButton({
+              label: this.running ? '抽取中…' : '开始抽签',
+              isEnabled: !this.running,
+              onPress: (): void => this.draw()
+            })
+          }
 
           Text('选项')
             .width('100%')
@@ -268,6 +352,8 @@ export struct WheelPage {
         colors: this.colors,
         onClose: (): void => {
           this.result = '';
+          this.liftedLabel = '';
+          this.stickOffset = 0;
         }
       })
     }

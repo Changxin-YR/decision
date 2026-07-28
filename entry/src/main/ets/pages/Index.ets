@@ -18,8 +18,10 @@ import {
   ResponsiveLayout
 } from '../models/NavigationModels';
 import { appStore, AppStore } from '../stores/AppStore';
+import { decisionDraftStore } from '../stores/DecisionDraftStore';
 import { PrivacyContent } from './Privacy';
 import { CoinPage } from './Coin';
+import { DrawPage } from './Draw';
 import { RandomNumberPage } from './RandomNumber';
 import { YesNoPage } from './YesNo';
 import { WheelPage } from './Wheel';
@@ -82,8 +84,6 @@ struct Index {
   @State private store: AppStore = appStore;
   @State private contentWidth: number = 360;
   @State private systemDark: boolean = false;
-  @State private currentDecisionTitle: string = '';
-  @State private currentDecisionOptions: string[] = [];
 
   private theme(): ThemeTokens {
     return ThemeResolver.resolve(this.store.settings.themeMode, this.systemDark);
@@ -94,14 +94,12 @@ struct Index {
   }
 
   private openTool(tool: HomeToolItem, title: string = ''): void {
-    this.currentDecisionTitle = title;
-    this.currentDecisionOptions = [];
+    decisionDraftStore.set(title, tool.toolType, []);
     this.pathStack.pushPathByName(tool.route, undefined);
   }
 
   private openTemplate(template: DecisionTemplate): void {
-    this.currentDecisionTitle = template.name;
-    this.currentDecisionOptions = Array.from(template.options);
+    decisionDraftStore.set(template.name, template.toolType, template.options);
     const route: AppRoute = template.toolType === ToolType.WHEEL ?
       AppRoute.WHEEL : AppRoute.DRAW;
     this.pathStack.pushPathByName(route, undefined);
@@ -282,8 +280,17 @@ struct Index {
       } else if (name === AppRoute.WHEEL) {
         WheelPage({
           colors: this.theme(),
-          initialTitle: this.currentDecisionTitle,
-          initialOptions: this.currentDecisionOptions,
+          initialTitle: decisionDraftStore.title,
+          initialOptions: decisionDraftStore.options,
+          onBack: (): void => {
+            this.pathStack.pop();
+          }
+        })
+      } else if (name === AppRoute.DRAW) {
+        DrawPage({
+          colors: this.theme(),
+          initialTitle: decisionDraftStore.title,
+          initialOptions: decisionDraftStore.options,
           onBack: (): void => {
             this.pathStack.pop();
           }

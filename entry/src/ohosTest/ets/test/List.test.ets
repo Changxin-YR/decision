@@ -1,5 +1,6 @@
 import appLifecycleBusTest from './AppLifecycleBus.test';
 import appStoreTest from './AppStore.test';
+import drawSessionTest from './DrawSession.test';
 import historyRepositoryTest from './HistoryRepository.test';
 import jsonCodecTest from './JsonCodec.test';
 import optionEditorStateTest from './OptionEditorState.test';
@@ -14,6 +15,7 @@ import wheelSessionTest from './WheelSession.test';
 export default function testsuite(): void {
   appStoreTest();
   appLifecycleBusTest();
+  drawSessionTest();
   jsonCodecTest();
   historyRepositoryTest();
   optionEditorStateTest();
