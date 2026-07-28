@@ -1,0 +1,19 @@
+# Local brainstorming companion
+.superpowers/
+
+# HarmonyOS / DevEco Studio build output
+.hvigor/
+.idea/
+build/
+entry/build/
+oh_modules/
+local.properties
+
+# Local signing and generated packages
+*.p12
+*.cer
+*.p7b
+*.hsp
+*.hap
+*.app
+
