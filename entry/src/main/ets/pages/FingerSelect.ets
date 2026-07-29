@@ -121,23 +121,44 @@ export struct FingerSelectPage {
 
   build() {
     Stack() {
-      Column({ space: AppSpacing.SM }) {
-        Text(this.state === FingerState.LOCKED ?
-          '选中你了！' : AppStrings.FINGER_GUIDE)
-          .fontSize(28)
+      Button('‹', { type: ButtonType.Normal })
+        .width(36)
+        .height(36)
+        .fontSize(28)
+        .fontColor(this.colors.text)
+        .backgroundColor(this.colors.card)
+        .borderRadius(18)
+        .position({ x: 16, y: 14 })
+        .onClick((): void => this.onBack())
+
+      Column({ space: 14 }) {
+        Text(this.state === FingerState.LOCKED ? '选中你了！' : '指尖选择')
+          .fontSize(30)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.colors.text)
           .textAlign(TextAlign.Center)
         Text(this.state === FingerState.IDLE ?
-          '至少需要两根手指' :
+          '请将手指放在屏幕上' :
           (this.state === FingerState.COUNTDOWN ?
             `保持不动，${this.countdown}` : '3 秒后可再次选择'))
+          .fontSize(20)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(this.colors.text)
+          .textAlign(TextAlign.Center)
+        Text(this.state === FingerState.IDLE ? '至少需要两根手指' : '')
           .fontSize(AppFontSizes.BODY)
           .fontColor(this.colors.subtext)
-          .textAlign(TextAlign.Center)
       }
-      .position({ x: 20, y: 36 })
+      .position({ x: 20, y: 92 })
       .width('calc(100% - 40vp)')
+
+      if (this.points.length === 0) {
+        Image($r('app.media.ui_finger_guide'))
+          .width('82%')
+          .height(330)
+          .objectFit(ImageFit.Contain)
+          .position({ x: '9%', y: 225 })
+      }
 
       ForEach(this.points, (point: FingerPoint, index: number): void => {
         Stack() {
@@ -159,10 +180,9 @@ export struct FingerSelectPage {
         .position({ x: point.x - 58, y: point.y - 58 })
       }, (point: FingerPoint): string => `${point.id}`)
 
-      Column({ space: AppSpacing.SM }) {
+      Column({ space: 14 }) {
         AppButton({
-          label: '再来一次',
-          variant: AppButtonVariant.SECONDARY,
+          label: '开始选择',
           onPress: (): void => this.reset()
         })
         AppButton({
@@ -172,8 +192,15 @@ export struct FingerSelectPage {
         })
       }
       .width('100%')
-      .padding({ left: 20, right: 20, bottom: 20 })
-      .align(Alignment.Bottom)
+      .padding({ left: 28, right: 28 })
+      .position({ x: 0, y: 570 })
+
+      Text('ⓘ 小提示：保持按住，结果更随机哦')
+        .width('100%')
+        .fontSize(AppFontSizes.CAPTION)
+        .fontColor(this.colors.subtext)
+        .textAlign(TextAlign.Center)
+        .position({ x: 0, y: 742 })
     }
     .width('100%')
     .height('100%')

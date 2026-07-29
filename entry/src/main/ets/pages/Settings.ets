@@ -91,7 +91,8 @@ export struct SettingsPage {
         .onChange(change)
     }
     .width('100%')
-    .padding(14)
+    .height(46)
+    .padding({ left: 14, right: 12 })
     .backgroundColor(this.colors.card)
     .borderRadius(AppRadii.CARD)
   }
@@ -100,8 +101,8 @@ export struct SettingsPage {
   private actionRow(label: string, danger: boolean, action: () => void) {
     Button(label, { type: ButtonType.Normal })
       .width('100%')
-      .height(52)
-      .fontSize(AppFontSizes.BODY)
+      .height(46)
+      .fontSize(14)
       .fontColor(danger ? this.colors.error : this.colors.text)
       .backgroundColor(this.colors.card)
       .borderRadius(AppRadii.CARD)
@@ -112,7 +113,7 @@ export struct SettingsPage {
   private infoRow(label: string) {
     Text(label)
       .width('100%')
-      .height(52)
+      .height(46)
       .padding({ left: 16, right: 16 })
       .fontSize(AppFontSizes.BODY)
       .fontColor(this.colors.subtext)
@@ -122,7 +123,7 @@ export struct SettingsPage {
   }
 
   build() {
-    Column({ space: AppSpacing.MD }) {
+    Column({ space: 10 }) {
       PageHeader({
         title: AppStrings.SETTINGS,
         subtitle: AppStrings.LOCAL_SETTINGS,
@@ -130,31 +131,37 @@ export struct SettingsPage {
         onBack: (): void => this.onBack()
       })
       Scroll() {
-        Column({ space: AppSpacing.MD }) {
+        Column({ space: 10 }) {
           Text(AppStrings.FEEDBACK)
             .width('100%')
-            .fontSize(AppFontSizes.HEADING)
-            .fontWeight(FontWeight.Bold)
+            .fontSize(AppFontSizes.CAPTION)
+            .fontWeight(FontWeight.Medium)
             .fontColor(this.colors.text)
-          this.settingSwitch(
-            AppStrings.VIBRATION,
-            this.store.settings.vibrationEnabled,
-            (value: boolean): void => {
-              this.store.updateSettings({ vibrationEnabled: value });
-            }
-          )
-          this.settingSwitch(
-            AppStrings.SOUND,
-            this.store.settings.soundEnabled,
-            (value: boolean): void => {
-              this.store.updateSettings({ soundEnabled: value });
-            }
-          )
+          Column({ space: 1 }) {
+            this.settingSwitch(
+              AppStrings.VIBRATION,
+              this.store.settings.vibrationEnabled,
+              (value: boolean): void => {
+                this.store.updateSettings({ vibrationEnabled: value });
+              }
+            )
+            this.settingSwitch(
+              AppStrings.SOUND,
+              this.store.settings.soundEnabled,
+              (value: boolean): void => {
+                this.store.updateSettings({ soundEnabled: value });
+              }
+            )
+          }
+          .width('100%')
+          .borderRadius(12)
+          .clip(true)
+          .shadow({ radius: 8, color: '#0D27496B', offsetX: 0, offsetY: 3 })
 
           Text(AppStrings.THEME)
             .width('100%')
-            .fontSize(AppFontSizes.HEADING)
-            .fontWeight(FontWeight.Bold)
+            .fontSize(AppFontSizes.CAPTION)
+            .fontWeight(FontWeight.Medium)
             .fontColor(this.colors.text)
           Row({ space: 8 }) {
             ForEach([
@@ -183,27 +190,39 @@ export struct SettingsPage {
 
           Text(AppStrings.DATA)
             .width('100%')
-            .fontSize(AppFontSizes.HEADING)
-            .fontWeight(FontWeight.Bold)
+            .fontSize(AppFontSizes.CAPTION)
+            .fontWeight(FontWeight.Medium)
             .fontColor(this.colors.text)
-          this.settingSwitch(
-            AppStrings.AUTO_SAVE,
-            this.store.settings.autoSaveHistory,
-            (value: boolean): void => {
-              this.store.updateSettings({ autoSaveHistory: value });
-            }
-          )
-          this.actionRow('清除历史记录', false, (): void => this.clearHistoryDialog.open())
-          this.actionRow('清除自定义模板', false, (): void => this.clearTemplatesDialog.open())
-          this.actionRow('清除全部数据', true, (): void => this.clearAllDialog.open())
+          Column({ space: 1 }) {
+            this.settingSwitch(
+              AppStrings.AUTO_SAVE,
+              this.store.settings.autoSaveHistory,
+              (value: boolean): void => {
+                this.store.updateSettings({ autoSaveHistory: value });
+              }
+            )
+            this.actionRow('清除历史记录', false, (): void => this.clearHistoryDialog.open())
+            this.actionRow('清除自定义模板', false, (): void => this.clearTemplatesDialog.open())
+            this.actionRow('清除全部数据', true, (): void => this.clearAllDialog.open())
+          }
+          .width('100%')
+          .borderRadius(12)
+          .clip(true)
+          .shadow({ radius: 8, color: '#0D27496B', offsetX: 0, offsetY: 3 })
 
           Text(AppStrings.ABOUT)
             .width('100%')
-            .fontSize(AppFontSizes.HEADING)
-            .fontWeight(FontWeight.Bold)
+            .fontSize(AppFontSizes.CAPTION)
+            .fontWeight(FontWeight.Medium)
             .fontColor(this.colors.text)
-          this.infoRow(AppStrings.APP_VERSION)
-          this.actionRow(AppStrings.PRIVACY_DESCRIPTION, false, (): void => this.onPrivacy())
+          Column({ space: 1 }) {
+            this.infoRow(AppStrings.APP_VERSION)
+            this.actionRow(AppStrings.PRIVACY_DESCRIPTION, false, (): void => this.onPrivacy())
+          }
+          .width('100%')
+          .borderRadius(12)
+          .clip(true)
+          .shadow({ radius: 8, color: '#0D27496B', offsetX: 0, offsetY: 3 })
           Text(AppStrings.USER_GUIDE)
             .width('100%')
             .fontSize(AppFontSizes.CAPTION)
@@ -213,10 +232,11 @@ export struct SettingsPage {
         .width('100%')
       }
       .layoutWeight(1)
+      .scrollBar(BarState.Off)
     }
     .width('100%')
     .height('100%')
-    .padding({ left: 20, right: 20, top: 18 })
+    .padding({ left: 16, right: 16, top: 14 })
     .backgroundColor(this.colors.background)
   }
 }

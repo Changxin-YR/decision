@@ -1,8 +1,9 @@
 import { AppButton, AppButtonVariant } from '../components/common/AppButton';
 import { PageHeader } from '../components/common/PageHeader';
-import { AppSpacing, ThemeTokens } from '../constants/DesignTokens';
+import { AppFontSizes, AppSpacing, ThemeTokens } from '../constants/DesignTokens';
 import { AppStrings } from '../constants/AppStrings';
 import { RandomService } from '../domain/random/RandomService';
+import { QuickRangePreset, QuickRangeValue } from '../domain/random/QuickRangePreset';
 import { NumberValidator } from '../domain/validation/NumberValidator';
 import { HistoryRecord, ToolType } from '../models/AppModels';
 import { clipboardService } from '../services/ClipboardService';
@@ -21,6 +22,7 @@ export struct RandomNumberPage {
   @State private error: string = '';
   @State private resultText: string = '';
   @State private saved: boolean = false;
+  @State private selectedRange: string = '1–100';
   private record: HistoryRecord | null = null;
 
   private generate(): void {
@@ -69,52 +71,126 @@ export struct RandomNumberPage {
     }
   }
 
+  private applyQuickRange(range: string): void {
+    this.selectedRange = range;
+    if (range === '自定义') {
+      return;
+    }
+    const value: QuickRangeValue = QuickRangePreset.resolve(range);
+    this.minText = value.min;
+    this.maxText = value.max;
+    this.error = '';
+  }
+
   build() {
     Scroll() {
-      Column({ space: AppSpacing.MD }) {
+      Column({ space: 16 }) {
         PageHeader({
           title: '随机数字',
-          subtitle: '支持负数与无重复抽取',
+          subtitle: '支持负数·无重复抽取',
           colors: this.colors,
           onBack: (): void => this.onBack()
         })
-        TextInput({ text: this.minText, placeholder: '最小值' })
-          .type(InputType.Number)
-          .onChange((value: string): void => {
-            this.minText = value;
-          })
-        TextInput({ text: this.maxText, placeholder: '最大值' })
-          .type(InputType.Number)
-          .onChange((value: string): void => {
-            this.maxText = value;
-          })
-        TextInput({ text: this.countText, placeholder: '数量' })
-          .type(InputType.Number)
-          .onChange((value: string): void => {
-            this.countText = value;
-          })
-        Row() {
-          Text('允许重复').fontColor(this.colors.text)
-          Blank()
-          Toggle({ type: ToggleType.Switch, isOn: this.allowRepeat })
-            .onChange((value: boolean): void => {
-              this.allowRepeat = value;
-            })
+        Column({ space: 12 }) {
+          Text('设置范围')
+            .width('100%')
+            .fontSize(AppFontSizes.BODY)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.colors.text)
+          Row() {
+            Column({ space: 2 }) {
+              Text('最小值').fontSize(AppFontSizes.CAPTION).fontColor(this.colors.text)
+              Text('可输入负数').fontSize(9).fontColor(this.colors.subtext)
+            }
+            .layoutWeight(1).alignItems(HorizontalAlign.Start)
+            TextInput({ text: this.minText })
+              .width(86).height(42).type(InputType.Number)
+              .fontSize(AppFontSizes.BODY)
+              .backgroundColor(this.colors.background)
+              .onChange((value: string): void => {
+                this.minText = value;
+                this.selectedRange = QuickRangePreset.match(value, this.maxText);
+              })
+          }
+          Row() {
+            Column({ space: 2 }) {
+              Text('最大值').fontSize(AppFontSizes.CAPTION).fontColor(this.colors.text)
+              Text('必须大于最小值').fontSize(9).fontColor(this.colors.subtext)
+            }
+            .layoutWeight(1).alignItems(HorizontalAlign.Start)
+            TextInput({ text: this.maxText })
+              .width(86).height(42).type(InputType.Number)
+              .fontSize(AppFontSizes.BODY)
+              .backgroundColor(this.colors.background)
+              .onChange((value: string): void => {
+                this.maxText = value;
+                this.selectedRange = QuickRangePreset.match(this.minText, value);
+              })
+          }
+          Row() {
+            Column({ space: 2 }) {
+              Text('抽取数量').fontSize(AppFontSizes.CAPTION).fontColor(this.colors.text)
+              Text('1-100').fontSize(9).fontColor(this.colors.subtext)
+            }
+            .layoutWeight(1).alignItems(HorizontalAlign.Start)
+            TextInput({ text: this.countText })
+              .width(86).height(42).type(InputType.Number)
+              .fontSize(AppFontSizes.BODY)
+              .backgroundColor(this.colors.background)
+              .onChange((value: string): void => { this.countText = value; })
+          }
+          Row() {
+            Column({ space: 2 }) {
+              Text('允许重复').fontSize(AppFontSizes.CAPTION).fontColor(this.colors.text)
+              Text('关闭时不会抽中相同数字').fontSize(9).fontColor(this.colors.subtext)
+            }
+            .layoutWeight(1).alignItems(HorizontalAlign.Start)
+            Toggle({ type: ToggleType.Switch, isOn: this.allowRepeat })
+              .onChange((value: boolean): void => { this.allowRepeat = value; })
+          }
         }
+        .width('100%')
+        .padding(18)
+        .backgroundColor(this.colors.card)
+        .borderRadius(12)
+        .shadow({ radius: 8, color: '#0D27496B', offsetX: 0, offsetY: 3 })
+
         if (this.error.length > 0) {
           Text(this.error).fontColor(this.colors.error)
         }
-        AppButton({ label: '生成数字', onPress: (): void => this.generate() })
-        if (this.resultText.length > 0) {
-          Text(this.resultText)
+        Column({ space: 18 }) {
+          Text('抽取结果')
             .width('100%')
-            .padding(18)
-            .fontSize(24)
-            .fontWeight(FontWeight.Bold)
+            .fontSize(AppFontSizes.BODY)
+            .fontWeight(FontWeight.Medium)
             .fontColor(this.colors.text)
-            .backgroundColor(this.colors.card)
-            .borderRadius(12)
-          Row({ space: 12 }) {
+          Text(this.resultText.length > 0 ? this.resultText : '—')
+            .fontSize(this.resultText.length > 0 ? 72 : 56)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.resultText.length > 0 ? this.colors.accent : this.colors.subtext)
+            .textAlign(TextAlign.Center)
+          Row({ space: 8 }) {
+            ForEach(['1–10', '1–100', '1–1000', '自定义'], (range: string): void => {
+              Button(range, { type: ButtonType.Normal })
+                .layoutWeight(1).height(36).fontSize(11)
+                .fontColor(range === this.selectedRange ? '#FFFFFF' : this.colors.text)
+                .backgroundColor(range === this.selectedRange ?
+                  this.colors.accent : this.colors.background)
+                .borderRadius(14)
+                .onClick((): void => this.applyQuickRange(range))
+            })
+          }
+        }
+        .width('100%')
+        .constraintSize({ minHeight: 210 })
+        .padding(18)
+        .backgroundColor(this.colors.card)
+        .borderRadius(12)
+        .shadow({ radius: 8, color: '#0D27496B', offsetX: 0, offsetY: 3 })
+
+        AppButton({ label: '◇  生成数字', onPress: (): void => this.generate() })
+        if (this.resultText.length > 0) {
+          Column({ space: 12 }) {
             AppButton({
               label: '复制',
               variant: AppButtonVariant.SECONDARY,
@@ -130,13 +206,15 @@ export struct RandomNumberPage {
               }
             })
           }
+          .width('100%')
         }
       }
       .width('100%')
-      .padding(20)
+      .padding({ left: 16, right: 16, top: 16, bottom: 36 })
     }
     .width('100%')
     .height('100%')
+    .scrollBar(BarState.Off)
     .backgroundColor(this.colors.background)
   }
 }

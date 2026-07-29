@@ -1,4 +1,5 @@
 import { AppCard } from '../components/common/AppCard';
+import { KeyboardAvoidMode } from '@kit.ArkUI';
 import {
   AppFontSizes,
   AppRadii,
@@ -35,7 +36,7 @@ const HOME_TOOLS: HomeToolItem[] = [
     route: AppRoute.WHEEL,
     toolType: ToolType.WHEEL,
     title: AppStrings.WHEEL,
-    description: '把纠结交给公平转盘',
+    description: '转动转盘做选择',
     symbol: '转',
     tint: '#E97878'
   },
@@ -43,7 +44,7 @@ const HOME_TOOLS: HomeToolItem[] = [
     route: AppRoute.DRAW,
     toolType: ToolType.DRAW,
     title: AppStrings.DRAW,
-    description: '抽一个名字或选项',
+    description: '写下选项随机抽取',
     symbol: '签',
     tint: '#E2BD55'
   },
@@ -89,12 +90,34 @@ struct Index {
   @State private contentWidth: number = 360;
   @State private systemDark: boolean = false;
 
+  aboutToAppear(): void {
+    this.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE);
+  }
+
   private theme(): ThemeTokens {
     return ThemeResolver.resolve(this.store.settings.themeMode, this.systemDark);
   }
 
   private columnCount(): number {
     return ResponsiveLayout.columnsForWidth(this.contentWidth);
+  }
+
+  private toolIcon(route: AppRoute): Resource {
+    if (route === AppRoute.WHEEL) return $r('app.media.ui_home_wheel');
+    if (route === AppRoute.DRAW) return $r('app.media.ui_home_draw');
+    if (route === AppRoute.FINGER_SELECT) return $r('app.media.ui_home_finger');
+    if (route === AppRoute.COIN) return $r('app.media.ui_home_coin');
+    if (route === AppRoute.YES_NO) return $r('app.media.ui_home_yesno');
+    return $r('app.media.ui_home_number');
+  }
+
+  private templateIcon(template: DecisionTemplate): Resource {
+    if (template.id === 'preset_eat') return $r('app.media.ui_quick_food');
+    if (template.id === 'preset_takeout') return $r('app.media.ui_quick_takeout');
+    if (template.id === 'preset_weekend') return $r('app.media.ui_quick_weekend');
+    if (template.id === 'preset_first') return $r('app.media.ui_quick_first');
+    return template.toolType === ToolType.WHEEL ?
+      $r('app.media.ui_home_wheel') : $r('app.media.ui_home_draw');
   }
 
   private openTool(tool: HomeToolItem, title: string = ''): void {
@@ -111,66 +134,88 @@ struct Index {
 
   @Builder
   private toolCard(tool: HomeToolItem) {
-    AppCard({ colors: this.theme(), contentPadding: 14 }) {
-      Column({ space: 12 }) {
-        Text(tool.symbol)
-          .width(44)
-          .height(44)
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#FFFFFF')
-          .textAlign(TextAlign.Center)
-          .backgroundColor(tool.tint)
-          .borderRadius(22)
-        Text(tool.title)
-          .width('100%')
-          .fontSize(18)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.theme().text)
-          .maxLines(1)
-        Text(tool.description)
-          .width('100%')
-          .fontSize(AppFontSizes.CAPTION)
-          .fontColor(this.theme().subtext)
-          .maxLines(2)
+    AppCard({ colors: this.theme(), contentPadding: 10 }) {
+      Row({ space: 6 }) {
+        Image(this.toolIcon(tool.route))
+          .width(62)
+          .height(78)
+          .objectFit(ImageFit.Contain)
+        Column({ space: 6 }) {
+          Text(tool.title)
+            .width('100%')
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.theme().text)
+            .maxLines(1)
+          Text(tool.description)
+            .width('100%')
+            .fontSize(9)
+            .fontColor(this.theme().subtext)
+            .maxLines(1)
+        }
+        .layoutWeight(1)
+        .alignItems(HorizontalAlign.Start)
+        .justifyContent(FlexAlign.Center)
       }
       .width('100%')
-      .height(132)
-      .alignItems(HorizontalAlign.Start)
+      .height(80)
+      .alignItems(VerticalAlign.Center)
       .onClick((): void => this.openTool(tool))
     }
   }
 
   @Builder
+  private headerAction(icon: Resource, label: string, action: () => void) {
+    Column({ space: 2 }) {
+      Image(icon)
+        .width(28)
+        .height(28)
+        .objectFit(ImageFit.Contain)
+      Text(label)
+        .fontSize(11)
+        .fontColor(this.theme().text)
+    }
+    .width(48)
+    .height(70)
+    .justifyContent(FlexAlign.Center)
+    .backgroundColor(this.theme().card)
+    .borderRadius(10)
+    .shadow({ radius: 10, color: '#0D27496B', offsetX: 0, offsetY: 3 })
+    .onClick(action)
+  }
+
+  @Builder
   private home() {
     Scroll() {
-      Column({ space: AppSpacing.LG }) {
+      Column({ space: AppSpacing.SECTION }) {
         Row() {
           Column({ space: 4 }) {
             Text('做个决定')
-              .fontSize(30)
+              .fontSize(28)
               .fontWeight(FontWeight.Bold)
               .fontColor(this.theme().text)
-            Text('不联网，不纠结，马上开始')
+            Text('把选择交给直觉')
               .fontSize(AppFontSizes.BODY)
               .fontColor(this.theme().subtext)
           }
           .layoutWeight(1)
           .alignItems(HorizontalAlign.Start)
-          Button('历史', { type: ButtonType.Normal })
-            .fontColor(this.theme().text)
-            .backgroundColor(this.theme().card)
-            .borderRadius(AppRadii.CARD)
-            .onClick((): void => {
+          Row({ space: 8 }) {
+            this.headerAction(
+              $r('app.media.ui_home_history'),
+              '历史',
+              (): void => {
               this.pathStack.pushPathByName(AppRoute.HISTORY, undefined);
-            })
-          Button('设置', { type: ButtonType.Normal })
-            .fontColor(this.theme().text)
-            .backgroundColor(this.theme().card)
-            .borderRadius(AppRadii.CARD)
-            .onClick((): void => {
+              }
+            )
+            this.headerAction(
+              $r('app.media.ui_home_settings'),
+              '设置',
+              (): void => {
               this.pathStack.pushPathByName(AppRoute.SETTINGS, undefined);
-            })
+              }
+            )
+          }
         }
         .width('100%')
         .alignItems(VerticalAlign.Center)
@@ -204,14 +249,10 @@ struct Index {
             PRESET_TEMPLATES.concat(this.store.templates),
             (template: DecisionTemplate): void => {
               Row({ space: 14 }) {
-                Text(template.toolType === ToolType.WHEEL ? '转' : '签')
+                Image(this.templateIcon(template))
                   .width(38)
                   .height(38)
-                  .textAlign(TextAlign.Center)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor('#FFFFFF')
-                  .backgroundColor(this.theme().accent)
-                  .borderRadius(19)
+                  .objectFit(ImageFit.Contain)
                 Column({ space: 3 }) {
                   Text(template.name)
                     .fontSize(AppFontSizes.BODY)
@@ -241,7 +282,7 @@ struct Index {
                   .fontColor(this.theme().subtext)
               }
               .width('100%')
-              .padding(14)
+              .padding({ left: 12, right: 12, top: 8, bottom: 8 })
               .backgroundColor(this.theme().card)
               .borderRadius(AppRadii.CARD)
               .border({ width: 1, color: this.theme().border })
@@ -263,11 +304,12 @@ struct Index {
       }
       .width('100%')
       .constraintSize({ maxWidth: 1040 })
-      .padding({ left: 18, right: 18, top: 20, bottom: 32 })
+      .padding({ left: 16, right: 16, top: 14, bottom: 28 })
       .alignItems(HorizontalAlign.Center)
     }
     .width('100%')
     .height('100%')
+    .scrollBar(BarState.Off)
     .backgroundColor(this.theme().background)
   }
 

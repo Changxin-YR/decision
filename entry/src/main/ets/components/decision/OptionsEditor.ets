@@ -24,77 +24,84 @@ export struct OptionsEditor {
 
   build() {
     Column({ space: 10 }) {
-      List({ space: 8 }) {
+      Column({ space: 8 }) {
         ForEach(
           this.options,
           (option: DecisionOption, index: number): void => {
-            ListItem() {
-              Row({ space: 8 }) {
-                Text('☰')
-                  .width(28)
-                  .fontSize(20)
-                  .fontColor(this.colors.subtext)
-                  .textAlign(TextAlign.Center)
-                  .gesture(
-                    GestureGroup(
-                      GestureMode.Sequence,
-                      LongPressGesture({ repeat: false, duration: 450 }),
-                      PanGesture({ direction: PanDirection.Vertical })
-                        .onActionEnd((event: GestureEvent): void => {
-                          const delta: number = Math.round(event.offsetY / 60);
-                          const target: number = Math.max(
-                            0,
-                            Math.min(this.options.length - 1, index + delta)
-                          );
-                          if (this.isEnabled && target !== index) {
-                            this.onMove(index, target);
-                          }
-                        })
-                    )
+            Row({ space: 8 }) {
+              Text('⠿')
+                .width(24)
+                .fontSize(18)
+                .fontColor(this.colors.subtext)
+                .textAlign(TextAlign.Center)
+                .gesture(
+                  GestureGroup(
+                    GestureMode.Sequence,
+                    LongPressGesture({ repeat: false, duration: 450 }),
+                    PanGesture({ direction: PanDirection.Vertical })
+                      .onActionEnd((event: GestureEvent): void => {
+                        const delta: number = Math.round(event.offsetY / 60);
+                        const target: number = Math.max(
+                          0,
+                          Math.min(this.options.length - 1, index + delta)
+                        );
+                        if (this.isEnabled && target !== index) {
+                          this.onMove(index, target);
+                        }
+                      })
                   )
-                TextInput({
-                  text: option.text,
-                  placeholder: `选项 ${index + 1}`
-                })
-                  .layoutWeight(1)
-                  .height(44)
-                  .fontSize(AppFontSizes.BODY)
-                  .fontColor(this.colors.text)
-                  .placeholderColor(this.colors.subtext)
-                  .backgroundColor(this.colors.card)
-                  .borderRadius(AppRadii.INPUT)
-                  .border({ width: 1, color: this.colors.border })
-                  .maxLength(AppLimits.MAX_OPTION_LENGTH)
-                  .enabled(this.isEnabled)
-                  .onChange((text: string): void => {
+                )
+              TextInput({
+                text: option.text,
+                placeholder: `选项 ${index + 1}`
+              })
+                .layoutWeight(1)
+                .height(44)
+                .fontSize(AppFontSizes.BODY)
+                .fontColor(this.colors.text)
+                .placeholderColor(this.colors.subtext)
+                .backgroundColor(this.colors.card)
+                .borderRadius(AppRadii.INPUT)
+                .border({ width: 1, color: this.colors.border })
+                .maxLength(AppLimits.MAX_OPTION_LENGTH)
+                .focusable(this.isEnabled)
+                .hitTestBehavior(
+                  this.isEnabled ? HitTestMode.Default : HitTestMode.None
+                )
+                .onChange((text: string): void => {
+                  if (this.isEnabled) {
                     this.onUpdate(option.id, text);
-                  })
-                Button('删除', { type: ButtonType.Normal })
-                  .height(40)
-                  .fontSize(AppFontSizes.CAPTION)
-                  .fontColor(this.colors.error)
-                  .backgroundColor('#00000000')
-                  .enabled(this.isEnabled && this.options.length > AppLimits.MIN_OPTIONS)
-                  .opacity(
-                    this.isEnabled && this.options.length > AppLimits.MIN_OPTIONS ? 1 : 0.35
-                  )
-                  .onClick((): void => {
-                    this.onRemove(option.id);
-                  })
-              }
-              .width('100%')
-              .padding({ left: 6, right: 4, top: 4, bottom: 4 })
-              .backgroundColor(this.colors.card)
-              .borderRadius(AppRadii.CARD)
-              .border({ width: 1, color: this.colors.border })
+                  }
+                })
+              Button('删除', { type: ButtonType.Normal })
+                .height(40)
+                .fontSize(AppFontSizes.CAPTION)
+                .fontColor(this.colors.error)
+                .backgroundColor('#00000000')
+                .enabled(this.isEnabled && this.options.length > AppLimits.MIN_OPTIONS)
+                .opacity(
+                  this.isEnabled && this.options.length > AppLimits.MIN_OPTIONS ? 1 : 0.35
+                )
+                .onClick((): void => {
+                  this.onRemove(option.id);
+                })
             }
+            .width('100%')
+            .padding({ left: 8, right: 6, top: 4, bottom: 4 })
+            .backgroundColor(this.colors.card)
+            .borderRadius(AppRadii.CARD)
+            .border({ width: 1, color: this.colors.border })
+            .shadow({
+              radius: 7,
+              color: '#0A27496B',
+              offsetX: 0,
+              offsetY: 2
+            })
           },
           (option: DecisionOption): string => option.id
         )
       }
       .width('100%')
-      .height(this.options.length * 60)
-      .scrollBar(BarState.Off)
 
       Button(`＋ 添加选项（${this.options.length}/${AppLimits.MAX_OPTIONS}）`, {
         type: ButtonType.Normal
@@ -105,7 +112,7 @@ export struct OptionsEditor {
         .fontColor(this.colors.accent)
         .backgroundColor(this.colors.card)
         .borderRadius(AppRadii.CARD)
-        .border({ width: 1, color: this.colors.border })
+        .border({ width: 1, color: this.colors.accent, style: BorderStyle.Dashed })
         .enabled(this.isEnabled && this.options.length < AppLimits.MAX_OPTIONS)
         .opacity(
           this.isEnabled && this.options.length < AppLimits.MAX_OPTIONS ? 1 : 0.45

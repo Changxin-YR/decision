@@ -6,36 +6,84 @@ export struct PageHeader {
   @Prop subtitle: string = '';
   @Prop showBack: boolean = true;
   @Prop colors: ThemeTokens;
+  @Prop rightLabel: string = '';
+  @Prop showRightIcon: boolean = false;
+  @Prop rightIcon: Resource = $r('app.media.ui_home_history');
   onBack: () => void = (): void => {
+  };
+  onRightPress: () => void = (): void => {
   };
 
   build() {
-    Row({ space: 12 }) {
-      if (this.showBack) {
-        Button('‹', { type: ButtonType.Circle })
-          .width(42)
-          .height(42)
-          .fontSize(30)
-          .fontColor(this.colors.text)
-          .backgroundColor(this.colors.card)
-          .onClick((): void => this.onBack())
-      }
+    Stack({ alignContent: Alignment.Center }) {
       Column({ space: 3 }) {
         Text(this.title)
-          .fontSize(AppFontSizes.TITLE)
+          .fontSize(AppFontSizes.PAGE_TITLE)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.colors.text)
+          .textAlign(TextAlign.Center)
           .maxLines(2)
         if (this.subtitle.length > 0) {
           Text(this.subtitle)
             .fontSize(AppFontSizes.CAPTION)
             .fontColor(this.colors.subtext)
+            .textAlign(TextAlign.Center)
+            .maxLines(1)
         }
       }
-      .layoutWeight(1)
-      .alignItems(HorizontalAlign.Start)
+      .constraintSize({ maxWidth: 250 })
+      .alignItems(HorizontalAlign.Center)
+
+      Row() {
+        if (this.showBack) {
+          Button('‹', { type: ButtonType.Normal })
+            .width(48)
+            .height(48)
+            .fontSize(34)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.colors.text)
+            .backgroundColor(this.colors.card)
+            .borderRadius(14)
+            .shadow({
+              radius: 9,
+              color: '#1427496B',
+              offsetX: 0,
+              offsetY: 2
+            })
+            .onClick((): void => this.onBack())
+        }
+        Blank()
+        if (this.rightLabel.length > 0) {
+          Button(this.rightLabel, { type: ButtonType.Normal })
+            .height(44)
+            .fontSize(AppFontSizes.BODY)
+            .fontColor(this.colors.accent)
+            .backgroundColor(this.colors.card)
+            .borderRadius(14)
+            .onClick((): void => this.onRightPress())
+        }
+        if (this.showRightIcon) {
+          Image(this.rightIcon)
+            .width(44)
+            .height(44)
+            .padding(8)
+            .objectFit(ImageFit.Contain)
+            .backgroundColor(this.colors.card)
+            .borderRadius(14)
+            .shadow({
+              radius: 8,
+              color: '#1427496B',
+              offsetX: 0,
+              offsetY: 2
+            })
+            .onClick((): void => this.onRightPress())
+        }
+      }
+      .width('100%')
+      .height(56)
+      .alignItems(VerticalAlign.Center)
     }
     .width('100%')
-    .alignItems(VerticalAlign.Center)
+    .height(68)
   }
 }

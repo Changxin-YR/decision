@@ -1,8 +1,9 @@
 import { AppButton, AppButtonVariant } from '../components/common/AppButton';
+import { AppInput } from '../components/common/AppInput';
 import { PageHeader } from '../components/common/PageHeader';
 import { ResultSheet } from '../components/common/ResultSheet';
 import { CoinView } from '../components/decision/CoinView';
-import { AppSpacing, ThemeTokens } from '../constants/DesignTokens';
+import { AppFontSizes, AppSpacing, ThemeTokens } from '../constants/DesignTokens';
 import { AppStrings } from '../constants/AppStrings';
 import { RandomService } from '../domain/random/RandomService';
 import { CoinSession } from '../domain/state/SimpleDecisionState';
@@ -23,6 +24,7 @@ export struct CoinPage {
   @State private saved: boolean = false;
   @State private result: string = '';
   @State private revealed: boolean = false;
+  @State private question: string = '';
   private session: CoinSession = new CoinSession();
   private timerId: number = -1;
   private unsubscribe: (() => void) | null = null;
@@ -77,7 +79,8 @@ export struct CoinPage {
       this.record = {
         id: `${Date.now()}`,
         toolType: ToolType.COIN,
-        title: AppStrings.COIN,
+        title: this.question.trim().length > 0 ?
+          this.question.trim() : AppStrings.COIN,
         options: [AppStrings.HEADS, AppStrings.TAILS],
         result: this.result,
         createdAt: new Date().toISOString()
@@ -98,39 +101,71 @@ export struct CoinPage {
 
   build() {
     Stack() {
-      Column({ space: AppSpacing.LG }) {
+      Column({ space: 16 }) {
         PageHeader({
           title: AppStrings.COIN,
-          subtitle: `${AppStrings.HEADS} ${this.session.headsCount} · ${AppStrings.TAILS} ${this.session.tailsCount}`,
+          subtitle: '让概率替你做决定',
           colors: this.colors,
           onBack: (): void => this.onBack()
         })
-        Blank()
+        Row() {
+          Text(`♧  正面  ${this.session.headsCount}`)
+            .layoutWeight(1)
+            .fontSize(AppFontSizes.BODY)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.colors.text)
+            .textAlign(TextAlign.Center)
+          Text('·').fontColor(this.colors.subtext)
+          Text(`◉  反面  ${this.session.tailsCount}`)
+            .layoutWeight(1)
+            .fontSize(AppFontSizes.BODY)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.colors.text)
+            .textAlign(TextAlign.Center)
+        }
+        .width('100%')
+        .height(52)
+        .backgroundColor(this.colors.card)
+        .borderRadius(12)
+        .shadow({ radius: 9, color: '#0D27496B', offsetX: 0, offsetY: 3 })
+
         CoinView({
           rotation: this.rotation,
           side: this.side,
           revealed: this.revealed,
           colors: this.colors
         })
-        Blank()
+        Column({ space: 8 }) {
+          Text('心里有个问题？')
+            .width('100%')
+            .fontSize(AppFontSizes.HEADING)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.colors.text)
+          Text('写下你的问题，再让硬币替你决定')
+            .width('100%')
+            .fontSize(AppFontSizes.CAPTION)
+            .fontColor(this.colors.subtext)
+          AppInput({
+            value: $question,
+            placeholder: '可以写下你的问题（选填）',
+            isEnabled: !this.running,
+            colors: this.colors
+          })
+        }
+        .width('100%')
+        .padding(14)
+        .backgroundColor(this.colors.card)
+        .borderRadius(12)
+        .shadow({ radius: 9, color: '#0D27496B', offsetX: 0, offsetY: 3 })
+
         AppButton({
-          label: this.running ? AppStrings.FLIPPING : AppStrings.TOSS,
+          label: this.running ? AppStrings.FLIPPING : `⟳  ${AppStrings.TOSS}`,
           isEnabled: !this.running,
           onPress: (): void => this.toss()
         })
-        if (this.record !== null && !this.running) {
-          AppButton({
-            label: this.saved ? AppStrings.SAVED : AppStrings.SAVE_RESULT,
-            variant: AppButtonVariant.SECONDARY,
-            isEnabled: !this.saved,
-            onPress: (): void => {
-              this.save();
-            }
-          })
-        }
         AppButton({
-          label: AppStrings.RESET_STATS,
-          variant: AppButtonVariant.TEXT,
+          label: `⟳  ${AppStrings.RESET_STATS}`,
+          variant: AppButtonVariant.SECONDARY,
           isEnabled: !this.running,
           onPress: (): void => {
             this.session.reset();
@@ -139,11 +174,14 @@ export struct CoinPage {
             this.result = '';
             this.revealed = false;
           }
-        })
+          })
+        Text('随机公正 · 结果仅供参考')
+          .fontSize(AppFontSizes.CAPTION)
+          .fontColor(this.colors.subtext)
       }
       .width('100%')
       .height('100%')
-      .padding(20)
+      .padding({ left: 16, right: 16, top: 14, bottom: 22 })
       .alignItems(HorizontalAlign.Center)
       .backgroundColor(this.colors.background)
 

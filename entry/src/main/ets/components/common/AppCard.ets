@@ -16,5 +16,11 @@ export struct AppCard {
     .backgroundColor(this.colors.card)
     .borderRadius(AppRadii.CARD)
     .border({ width: 1, color: this.colors.border })
+    .shadow({
+      radius: 10,
+      color: '#0D27496B',
+      offsetX: 0,
+      offsetY: 3
+    })
   }
 }

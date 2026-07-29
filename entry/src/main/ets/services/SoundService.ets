@@ -1,6 +1,10 @@
 import { common } from '@kit.AbilityKit';
 import { media } from '@kit.MediaKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppStore, appStore } from '../stores/AppStore';
+
+const DOMAIN: number = 0x4443;
+const TAG: string = 'Decision';
 
 export enum SoundEffect {
   TAP = 'tap.wav',
@@ -42,7 +46,8 @@ export class SoundService {
       await this.player.prepare();
       await this.player.play();
       return true;
-    } catch {
+    } catch (_error) {
+      hilog.warn(DOMAIN, TAG, 'Sound effect playback failed');
       await this.release();
       return false;
     }

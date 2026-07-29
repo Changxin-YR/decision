@@ -19,6 +19,7 @@ import {
   WheelSpin
 } from '../domain/state/WheelSession';
 import {
+  DecisionOption,
   HistoryRecord,
   ToolType
 } from '../models/AppModels';
@@ -35,6 +36,8 @@ export struct WheelPage {
   @Prop initialOptions: string[] = [];
   onBack: () => void = (): void => {
   };
+  @State private wheelOptions: string[] = ['待填写', '待填写'];
+  @State private editorOptions: DecisionOption[] = [];
   @State private optionsVersion: number = 0;
   @State private error: string = '';
   @State private rotation: number = 0;
@@ -81,7 +84,8 @@ export struct WheelPage {
       );
     }
     this.initialDraftOptions = this.optionTexts();
-    this.optionsVersion++;
+    this.refreshEditorOptions();
+    this.refreshWheelOptions();
     if (this.unsubscribe === null) {
       this.unsubscribe = appLifecycleBus.subscribe((background: boolean): void => {
         if (background) {
@@ -103,26 +107,44 @@ export struct WheelPage {
     return Array.from(decisionDraftStore.options);
   }
 
-  private updateOption(id: string, text: string): void {
-    decisionDraftStore.updateOption(id, text);
+  private refreshWheelOptions(): void {
+    this.wheelOptions = this.optionTexts().map((value: string): string => {
+      return value.trim().length > 0 ? value.trim() : '待填写';
+    });
     this.optionsVersion++;
+  }
+
+  private refreshEditorOptions(): void {
+    this.editorOptions = decisionDraftStore.decisionOptions();
+  }
+
+  private updateOption(id: string, text: string): void {
+    if (this.running) {
+      return;
+    }
+    decisionDraftStore.updateOption(id, text);
+    this.refreshEditorOptions();
+    this.refreshWheelOptions();
     this.error = '';
   }
 
   private removeOption(id: string): void {
     decisionDraftStore.removeOption(id);
-    this.optionsVersion++;
+    this.refreshEditorOptions();
+    this.refreshWheelOptions();
     this.error = '';
   }
 
   private moveOption(from: number, to: number): void {
     decisionDraftStore.moveOption(from, to);
-    this.optionsVersion++;
+    this.refreshEditorOptions();
+    this.refreshWheelOptions();
   }
 
   private addOption(): void {
     decisionDraftStore.addOption();
-    this.optionsVersion++;
+    this.refreshEditorOptions();
+    this.refreshWheelOptions();
   }
 
   private requestBack(): void {
@@ -156,13 +178,15 @@ export struct WheelPage {
     }
     const values: string[] =
       this.optionTexts().map((value: string): string => value.trim());
+    this.running = true;
     decisionDraftStore.updateOptions(values);
+    this.refreshWheelOptions();
     const spin: WheelSpin | null = this.session.start(values);
     if (spin === null) {
+      this.running = false;
       return;
     }
     this.error = '';
-    this.running = true;
     this.result = '';
     this.saved = false;
     this.record = null;
@@ -180,6 +204,8 @@ export struct WheelPage {
       if (!this.session.complete()) {
         return;
       }
+      decisionDraftStore.updateOptions(values);
+      this.refreshEditorOptions();
       this.running = false;
       this.result = spin.result;
       this.record = {
@@ -218,7 +244,7 @@ export struct WheelPage {
   build() {
     Stack() {
       Scroll() {
-        Column({ space: AppSpacing.LG }) {
+        Column({ space: 12 }) {
           PageHeader({
             title: this.initialTitle.length > 0 ? this.initialTitle : AppStrings.WHEEL,
             subtitle: this.running ? AppStrings.WHEEL_WAIT : AppStrings.WHEEL_FAIR,
@@ -231,9 +257,8 @@ export struct WheelPage {
           })
 
           WheelCanvas({
-            options: this.optionTexts().map((value: string): string => {
-              return value.trim().length > 0 ? value.trim() : '待填写';
-            }),
+            options: this.wheelOptions,
+            refreshVersion: this.optionsVersion,
             rotation: this.rotation,
             colors: this.colors
           })
@@ -250,15 +275,48 @@ export struct WheelPage {
             .fontWeight(FontWeight.Bold)
             .fontColor(this.colors.text)
 
-          OptionsEditor({
-            options: decisionDraftStore.decisionOptions(),
-            isEnabled: !this.running && this.optionsVersion >= 0,
-            colors: this.colors,
-            onUpdate: (id: string, text: string): void => this.updateOption(id, text),
-            onRemove: (id: string): void => this.removeOption(id),
-            onMove: (from: number, to: number): void => this.moveOption(from, to),
-            onAdd: (): void => this.addOption()
-          })
+          if (this.running || this.result.length > 0) {
+            Column({ space: 8 }) {
+              ForEach(this.wheelOptions, (value: string, index: number): void => {
+                Row({ space: 8 }) {
+                  Text('⠿')
+                    .width(24)
+                    .fontSize(18)
+                    .fontColor(this.colors.subtext)
+                    .textAlign(TextAlign.Center)
+                  Text(value)
+                    .layoutWeight(1)
+                    .height(44)
+                    .padding({ left: 12, right: 12 })
+                    .fontSize(AppFontSizes.BODY)
+                    .fontColor(this.colors.text)
+                    .backgroundColor(this.colors.card)
+                    .borderRadius(8)
+                    .border({ width: 1, color: this.colors.border })
+                  Text('删除')
+                    .fontSize(AppFontSizes.CAPTION)
+                    .fontColor(this.colors.error)
+                    .opacity(0.35)
+                }
+                .width('100%')
+                .padding({ left: 8, right: 12, top: 4, bottom: 4 })
+                .backgroundColor(this.colors.card)
+                .borderRadius(12)
+                .border({ width: 1, color: this.colors.border })
+              }, (_value: string, index: number): string => `${index}`)
+            }
+            .width('100%')
+          } else {
+            OptionsEditor({
+              options: this.editorOptions,
+              isEnabled: true,
+              colors: this.colors,
+              onUpdate: (id: string, text: string): void => this.updateOption(id, text),
+              onRemove: (id: string): void => this.removeOption(id),
+              onMove: (from: number, to: number): void => this.moveOption(from, to),
+              onAdd: (): void => this.addOption()
+            })
+          }
 
           if (this.error.length > 0) {
             Text(this.error)
@@ -286,11 +344,12 @@ export struct WheelPage {
         }
         .width('100%')
         .constraintSize({ maxWidth: 720 })
-        .padding({ left: 20, right: 20, top: 20, bottom: 36 })
+        .padding({ left: 16, right: 16, top: 14, bottom: 28 })
         .alignItems(HorizontalAlign.Center)
       }
       .width('100%')
       .height('100%')
+      .scrollBar(BarState.Off)
       .backgroundColor(this.colors.background)
 
       ResultSheet({
@@ -299,10 +358,14 @@ export struct WheelPage {
         colors: this.colors,
         showRetry: true,
         onRetry: (): void => {
+          decisionDraftStore.updateOptions(this.wheelOptions);
+          this.refreshEditorOptions();
           this.result = '';
           this.spin();
         },
         onClose: (): void => {
+          decisionDraftStore.updateOptions(this.wheelOptions);
+          this.refreshEditorOptions();
           this.result = '';
         }
       })

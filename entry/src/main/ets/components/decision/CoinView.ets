@@ -10,19 +10,22 @@ export struct CoinView {
 
   build() {
     Stack() {
-      Circle()
-        .width(190)
-        .height(190)
-        .fill('#E7B83B')
-        .stroke('#C68E19')
-        .strokeWidth(8)
-      Text(this.revealed ? (this.side === CoinSide.HEADS ? '正' : '反') : '？')
-        .fontSize(66)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#FFF8DC')
+      Image($r('app.media.ui_coin'))
+        .width(250)
+        .height(274)
+        .objectFit(ImageFit.Contain)
+        .rotate({ y: 1, angle: this.rotation })
+      if (this.revealed) {
+        Text(this.side === CoinSide.HEADS ? '正' : '反')
+          .fontSize(38)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(this.colors.accent)
+          .backgroundColor('#CCFFFFFF')
+          .borderRadius(36)
+          .padding(16)
+      }
     }
-    .width(210)
-    .height(210)
-    .rotate({ y: 1, angle: this.rotation })
+    .width(270)
+    .height(286)
   }
 }

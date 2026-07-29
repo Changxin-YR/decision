@@ -13,8 +13,8 @@ export struct AppInput {
     Column({ space: 6 }) {
       TextInput({ text: this.value, placeholder: this.placeholder })
         .width('100%')
-        .height(46)
-        .fontSize(AppFontSizes.BODY)
+        .height(44)
+        .fontSize(14)
         .fontColor(this.colors.text)
         .placeholderColor(this.colors.subtext)
         .backgroundColor(this.colors.card)

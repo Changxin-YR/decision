@@ -2,7 +2,7 @@ import { AppButton } from '../components/common/AppButton';
 import { AppInput } from '../components/common/AppInput';
 import { PageHeader } from '../components/common/PageHeader';
 import { ResultSheet } from '../components/common/ResultSheet';
-import { AppSpacing, ThemeTokens } from '../constants/DesignTokens';
+import { AppFontSizes, AppSpacing, ThemeTokens } from '../constants/DesignTokens';
 import { RandomService } from '../domain/random/RandomService';
 import { SimpleDecisionState } from '../domain/state/SimpleDecisionState';
 import { HistoryRecord, ToolType } from '../models/AppModels';
@@ -89,13 +89,20 @@ export struct YesNoPage {
 
   build() {
     Stack() {
-      Column({ space: AppSpacing.LG }) {
+      Column({ space: 18 }) {
         PageHeader({
           title: '是或否',
-          subtitle: '把问题留给直觉',
+          subtitle: '',
           colors: this.colors,
           onBack: (): void => this.onBack()
         })
+        Text('心里有个问题？')
+          .fontSize(AppFontSizes.HEADING)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(this.colors.text)
+        Text('写下你的问题，让直觉帮你决定')
+          .fontSize(AppFontSizes.CAPTION)
+          .fontColor(this.colors.subtext)
         AppInput({
           value: $question,
           placeholder: '可以写下你的问题（选填）',
@@ -103,16 +110,36 @@ export struct YesNoPage {
           colors: this.colors
         })
         Blank()
-        Button(this.running ? '…' : '?', { type: ButtonType.Circle })
-          .width(190)
-          .height(190)
-          .fontSize(72)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#FFFFFF')
-          .backgroundColor(this.colors.accent)
-          .enabled(!this.running)
-          .onClick((): void => this.decide())
+        Row({ space: 24 }) {
+          Button(this.running ? '…' : '是', { type: ButtonType.Circle })
+            .width(112)
+            .height(112)
+            .fontSize(30)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.colors.accent)
+            .backgroundColor('#F1F8FE')
+            .border({ width: 2, color: '#D4EBFC' })
+            .shadow({ radius: 14, color: '#182D94F4', offsetX: 0, offsetY: 4 })
+            .enabled(!this.running)
+            .onClick((): void => this.decide())
+          Button(this.running ? '…' : '否', { type: ButtonType.Circle })
+            .width(112)
+            .height(112)
+            .fontSize(30)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.colors.subtext)
+            .backgroundColor(this.colors.card)
+            .border({ width: 2, color: this.colors.border })
+            .shadow({ radius: 14, color: '#1427496B', offsetX: 0, offsetY: 4 })
+            .enabled(!this.running)
+            .onClick((): void => this.decide())
+        }
         Blank()
+        AppButton({
+          label: '交给直觉',
+          isEnabled: !this.running,
+          onPress: (): void => this.decide()
+        })
         if (this.result.length > 0) {
           AppButton({
             label: this.saved ? '已保存' : '保存结果',
@@ -125,7 +152,7 @@ export struct YesNoPage {
       }
       .width('100%')
       .height('100%')
-      .padding(20)
+      .padding({ left: 16, right: 16, top: 14, bottom: 22 })
       .backgroundColor(this.colors.background)
 
       ResultSheet({

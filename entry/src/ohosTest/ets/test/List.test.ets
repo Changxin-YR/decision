@@ -1,8 +1,10 @@
 import appLifecycleBusTest from './AppLifecycleBus.test';
 import appStoreTest from './AppStore.test';
+import drawMotionPlanTest from './DrawMotionPlan.test';
 import drawSessionTest from './DrawSession.test';
 import draftChangeDetectorTest from './DraftChangeDetector.test';
 import fingerSelectionMachineTest from './FingerSelectionMachine.test';
+import feedbackRegressionTest from './FeedbackRegression.test';
 import historyRepositoryTest from './HistoryRepository.test';
 import jsonCodecTest from './JsonCodec.test';
 import optionEditorStateTest from './OptionEditorState.test';
@@ -12,15 +14,18 @@ import simpleDecisionStateTest from './SimpleDecisionState.test';
 import themeResolverTest from './ThemeResolver.test';
 import timeFormatterTest from './TimeFormatter.test';
 import validationTest from './Validation.test';
+import visualTokensTest from './VisualTokens.test';
 import wheelGeometryTest from './WheelGeometry.test';
 import wheelSessionTest from './WheelSession.test';
 
 export default function testsuite(): void {
   appStoreTest();
   appLifecycleBusTest();
+  drawMotionPlanTest();
   drawSessionTest();
   draftChangeDetectorTest();
   fingerSelectionMachineTest();
+  feedbackRegressionTest();
   jsonCodecTest();
   historyRepositoryTest();
   optionEditorStateTest();
@@ -30,6 +35,7 @@ export default function testsuite(): void {
   themeResolverTest();
   timeFormatterTest();
   validationTest();
+  visualTokensTest();
   wheelGeometryTest();
   wheelSessionTest();
 }

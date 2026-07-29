@@ -11,6 +11,10 @@ import {
   ThemeTokens
 } from '../constants/DesignTokens';
 import { AppStrings } from '../constants/AppStrings';
+import {
+  DrawMotionPlan,
+  DrawShakeStage
+} from '../domain/draw/DrawMotionPlan';
 import { DrawSession } from '../domain/state/DrawSession';
 import { DraftChangeDetector } from '../domain/validation/DraftChangeDetector';
 import { OptionValidator } from '../domain/validation/OptionValidator';
@@ -39,7 +43,11 @@ export struct DrawPage {
   @State private saved: boolean = false;
   @State private remainingCount: number = 0;
   @State private shakeAngle: number = 0;
+  @State private shakeY: number = 0;
   @State private stickOffset: number = 0;
+  @State private stickOpacity: number = 0;
+  @State private stickScale: number = 0.96;
+  @State private revealGlow: number = 0;
   @State private liftedLabel: string = '';
   private timerIds: number[] = [];
   private unsubscribe: (() => void) | null = null;
@@ -167,6 +175,16 @@ export struct DrawPage {
     this.timerIds = [];
   }
 
+  private resetMotion(): void {
+    this.shakeAngle = 0;
+    this.shakeY = 0;
+    this.stickOffset = 0;
+    this.stickOpacity = 0;
+    this.stickScale = 0.96;
+    this.revealGlow = 0;
+    this.liftedLabel = '';
+  }
+
   private cancel(): void {
     this.syncDraft();
     this.clearTimers();
@@ -175,9 +193,7 @@ export struct DrawPage {
       session.cancel();
     }
     this.running = false;
-    this.shakeAngle = 0;
-    this.stickOffset = 0;
-    this.liftedLabel = '';
+    this.resetMotion();
   }
 
   private ensureSession(values: string[]): DrawSession {
@@ -208,23 +224,62 @@ export struct DrawPage {
     this.result = '';
     this.saved = false;
     this.record = null;
+    this.clearTimers();
+    this.resetMotion();
     this.liftedLabel = pending;
-    this.stickOffset = 0;
     soundService.play(SoundEffect.DRAW);
-    this.getUIContext().animateTo({ duration: 240, curve: Curve.EaseInOut }, (): void => {
-      this.shakeAngle = 7;
+    feedbackService.impact(DrawMotionPlan.CUES[0].duration);
+    DrawMotionPlan.SHAKES.forEach((stage: DrawShakeStage): void => {
+      this.timerIds.push(setTimeout((): void => {
+        this.getUIContext().animateTo({
+          duration: stage.duration,
+          curve: Curve.EaseInOut
+        }, (): void => {
+          this.shakeAngle = stage.angle;
+          this.shakeY = stage.translateY;
+        });
+      }, stage.at));
     });
     this.timerIds.push(setTimeout((): void => {
-      this.getUIContext().animateTo({ duration: 260, curve: Curve.EaseInOut }, (): void => {
-        this.shakeAngle = -7;
-      });
-    }, 240));
+      feedbackService.impact(DrawMotionPlan.CUES[1].duration);
+    }, DrawMotionPlan.CUES[1].at));
     this.timerIds.push(setTimeout((): void => {
-      this.getUIContext().animateTo({ duration: 650, curve: Curve.EaseOut }, (): void => {
+      this.getUIContext().animateTo({
+        duration: DrawMotionPlan.PAUSE_END - DrawMotionPlan.SHAKE_END,
+        curve: Curve.EaseOut
+      }, (): void => {
         this.shakeAngle = 0;
-        this.stickOffset = -96;
+        this.shakeY = 0;
       });
-    }, 500));
+    }, DrawMotionPlan.SHAKE_END));
+    this.timerIds.push(setTimeout((): void => {
+      this.getUIContext().animateTo({
+        duration: DrawMotionPlan.LIFT_PEAK - DrawMotionPlan.PAUSE_END,
+        curve: Curve.EaseOut
+      }, (): void => {
+        this.stickOffset = -128;
+        this.stickOpacity = 1;
+        this.stickScale = 1.04;
+      });
+    }, DrawMotionPlan.PAUSE_END));
+    this.timerIds.push(setTimeout((): void => {
+      this.getUIContext().animateTo({
+        duration: DrawMotionPlan.LIFT_SETTLE - DrawMotionPlan.LIFT_PEAK,
+        curve: Curve.EaseInOut
+      }, (): void => {
+        this.stickOffset = -116;
+        this.stickScale = 1;
+        this.revealGlow = 1;
+      });
+    }, DrawMotionPlan.LIFT_PEAK));
+    this.timerIds.push(setTimeout((): void => {
+      this.getUIContext().animateTo({
+        duration: 300,
+        curve: Curve.EaseInOut
+      }, (): void => {
+        this.revealGlow = 0.62;
+      });
+    }, DrawMotionPlan.LIFT_SETTLE));
     this.timerIds.push(setTimeout((): void => {
       this.clearTimers();
       if (!session.complete()) {
@@ -242,15 +297,16 @@ export struct DrawPage {
         result: pending,
         createdAt: new Date().toISOString()
       };
-      feedbackService.impact();
+      feedbackService.impact(DrawMotionPlan.CUES[2].duration);
       soundService.play(SoundEffect.RESULT);
       if (appStore.settings.autoSaveHistory) {
         this.save();
       }
-    }, 1200));
+    }, DrawMotionPlan.RESULT_AT));
   }
 
   private resetDraws(): void {
+    this.clearTimers();
     const session: DrawSession | null = decisionDraftStore.currentDrawSession();
     if (session !== null) {
       session.reset();
@@ -258,8 +314,7 @@ export struct DrawPage {
     }
     this.result = '';
     this.error = '';
-    this.liftedLabel = '';
-    this.stickOffset = 0;
+    this.resetMotion();
   }
 
   private async save(): Promise<void> {
@@ -281,7 +336,7 @@ export struct DrawPage {
   build() {
     Stack() {
       Scroll() {
-        Column({ space: AppSpacing.LG }) {
+        Column({ space: 12 }) {
           PageHeader({
             title: this.initialTitle.length > 0 ? this.initialTitle : '抽签',
             subtitle: this.running ? '正在抽取，请稍候' :
@@ -307,11 +362,20 @@ export struct DrawPage {
               })
           }
           .width('100%')
+          .height(48)
+          .padding({ left: 14, right: 12 })
+          .backgroundColor(this.colors.card)
+          .borderRadius(12)
+          .shadow({ radius: 8, color: '#0D27496B', offsetX: 0, offsetY: 3 })
 
           DrawTube({
             colors: this.colors,
             shakeAngle: this.shakeAngle,
+            shakeY: this.shakeY,
             stickOffset: this.stickOffset,
+            stickOpacity: this.stickOpacity,
+            stickScale: this.stickScale,
+            revealGlow: this.revealGlow,
             liftedLabel: this.liftedLabel
           })
 
@@ -376,11 +440,12 @@ export struct DrawPage {
         }
         .width('100%')
         .constraintSize({ maxWidth: 720 })
-        .padding({ left: 20, right: 20, top: 20, bottom: 36 })
+        .padding({ left: 16, right: 16, top: 14, bottom: 28 })
         .alignItems(HorizontalAlign.Center)
       }
       .width('100%')
       .height('100%')
+      .scrollBar(BarState.Off)
       .backgroundColor(this.colors.background)
 
       ResultSheet({
@@ -390,14 +455,12 @@ export struct DrawPage {
         showRetry: true,
         onRetry: (): void => {
           this.result = '';
-          this.liftedLabel = '';
-          this.stickOffset = 0;
+          this.resetMotion();
           this.draw();
         },
         onClose: (): void => {
           this.result = '';
-          this.liftedLabel = '';
-          this.stickOffset = 0;
+          this.resetMotion();
         }
       })
     }

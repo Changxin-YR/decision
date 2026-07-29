@@ -2,10 +2,12 @@ import {
   ThemeTokens,
   WHEEL_COLORS
 } from '../../constants/DesignTokens';
+import { WheelLabelLayout } from '../../domain/wheel/WheelLabelLayout';
 
 @Component
 export struct WheelCanvas {
   @Watch('redraw') @Prop options: string[] = [];
+  @Watch('redraw') @Prop refreshVersion: number = 0;
   @Prop rotation: number = 0;
   @Prop colors: ThemeTokens;
   @State private diameter: number = 280;
@@ -40,18 +42,22 @@ export struct WheelCanvas {
       this.context.stroke();
 
       this.context.save();
-      this.context.translate(center, center);
-      this.context.rotate(start + sector / 2);
-      this.context.fillStyle = '#FFFFFF';
+      const labelAngle: number = start + sector / 2;
+      const labelX: number = center + Math.cos(labelAngle) * radius * 0.62;
+      const labelY: number = center + Math.sin(labelAngle) * radius * 0.62;
+      this.context.translate(labelX, labelY);
+      this.context.fillStyle = '#53647A';
       const crowded: boolean = this.options.length > 8;
-      this.context.font = crowded ? '15px sans-serif' : '26px sans-serif';
+      this.context.font =
+        `${WheelLabelLayout.fontSize(this.options.length)}px sans-serif`;
       this.context.textAlign = 'center';
       this.context.textBaseline = 'middle';
-      const maxChars: number = crowded ? 5 : 8;
+      const maxChars: number =
+        WheelLabelLayout.maxCharacters(this.options.length);
       const label: string = this.options[index].length > maxChars ?
         `${this.options[index].slice(0, maxChars - 1)}…` : this.options[index];
-      this.context.fillText(label, radius * 0.66, 0,
-        crowded ? radius * 0.38 : radius * 0.58);
+      this.context.fillText(label, 0, 0,
+        radius * WheelLabelLayout.maxWidthRatio(this.options.length));
       this.context.restore();
     }
   }
@@ -80,14 +86,14 @@ export struct WheelCanvas {
         .width(28)
         .height(30)
         .points([[0, 0], [28, 0], [14, 30]])
-        .fill(this.colors.error)
+        .fill(this.colors.accent)
         .position({ x: this.diameter / 2 - 14, y: -2 })
     }
     .width('100%')
     .height(this.diameter + 18)
     .onAreaChange((_oldValue: Area, newValue: Area): void => {
       const width: number = Number(newValue.width);
-      const next: number = Math.max(220, Math.min(360, width - 20));
+      const next: number = Math.max(220, Math.min(330, width - 20));
       if (Math.abs(next - this.diameter) >= 1) {
         this.diameter = next;
         this.draw();

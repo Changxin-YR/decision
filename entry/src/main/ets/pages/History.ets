@@ -24,6 +24,7 @@ export struct HistoryPage {
   };
   @State private store: AppStore = appStore;
   @State private selected: HistoryRecord | null = null;
+  @State private filter: string = '全部';
   private clearDialog: CustomDialogController = new CustomDialogController({
     builder: ConfirmDialog({
       title: '清空历史记录',
@@ -68,15 +69,137 @@ export struct HistoryPage {
     }
   }
 
+  private visibleHistory(): HistoryRecord[] {
+    if (this.filter === '全部') {
+      return this.store.history;
+    }
+    let filterType: ToolType = ToolType.WHEEL;
+    if (this.filter === '抽签') filterType = ToolType.DRAW;
+    if (this.filter === '抛硬币') filterType = ToolType.COIN;
+    if (this.filter === '数字') filterType = ToolType.NUMBER;
+    if (this.filter === '是或否') filterType = ToolType.YES_NO;
+    return this.store.history.filter((record: HistoryRecord): boolean =>
+      record.toolType === filterType);
+  }
+
+  private historyIcon(type: ToolType): Resource {
+    if (type === ToolType.WHEEL) return $r('app.media.ui_history_wheel');
+    if (type === ToolType.DRAW) return $r('app.media.ui_history_draw');
+    if (type === ToolType.COIN) return $r('app.media.ui_history_coin');
+    if (type === ToolType.YES_NO) return $r('app.media.ui_history_yesno');
+    return $r('app.media.ui_history_number');
+  }
+
+  private dateLabel(isoTime: string): string {
+    const value: Date = new Date(isoTime);
+    const now: Date = new Date();
+    const today: string = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+    const recordDay: string =
+      `${value.getFullYear()}-${value.getMonth()}-${value.getDate()}`;
+    if (recordDay === today) return '今天';
+    const yesterday: Date = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const previousDay: string =
+      `${yesterday.getFullYear()}-${yesterday.getMonth()}-${yesterday.getDate()}`;
+    if (recordDay === previousDay) return '昨天';
+    return `${value.getMonth() + 1}月${value.getDate()}日`;
+  }
+
+  private dateGroups(): string[] {
+    const groups: string[] = [];
+    this.visibleHistory().forEach((record: HistoryRecord): void => {
+      const label: string = this.dateLabel(record.createdAt);
+      if (groups.indexOf(label) < 0) groups.push(label);
+    });
+    return groups;
+  }
+
+  private recordsForGroup(group: string): HistoryRecord[] {
+    return this.visibleHistory().filter((record: HistoryRecord): boolean =>
+      this.dateLabel(record.createdAt) === group);
+  }
+
+  private timeOnly(isoTime: string): string {
+    const value: Date = new Date(isoTime);
+    return `${value.getHours()}`.padStart(2, '0') + ':' +
+      `${value.getMinutes()}`.padStart(2, '0');
+  }
+
+  @Builder
+  private historyRow(record: HistoryRecord) {
+    Row({ space: 10 }) {
+      Image(this.historyIcon(record.toolType))
+        .width(46)
+        .height(50)
+        .objectFit(ImageFit.Contain)
+      Column({ space: 2 }) {
+        Text(this.toolName(record.toolType))
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(this.colors.text)
+        Text(record.title.length > 0 ? record.title :
+          (record.options.length > 0 ? record.options.join(' · ') : '完成 1 次'))
+          .fontSize(13)
+          .fontColor(this.colors.subtext)
+          .maxLines(1)
+      }
+      .layoutWeight(1)
+      .alignItems(HorizontalAlign.Start)
+      Column({ space: 2 }) {
+        Text(record.result)
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(this.colors.text)
+          .maxLines(1)
+        Text(this.timeOnly(record.createdAt))
+          .fontSize(13)
+          .fontColor(this.colors.subtext)
+      }
+      .alignItems(HorizontalAlign.End)
+    }
+    .width('100%')
+    .height(70)
+    .padding({ left: 10, right: 12 })
+    .backgroundColor(this.colors.card)
+    .onClick((): void => {
+      this.selected = record;
+    })
+    .gesture(
+      LongPressGesture({ duration: 600 })
+        .onAction((): void => {
+          this.remove(record);
+        })
+    )
+  }
+
   build() {
     Stack() {
       Column({ space: AppSpacing.MD }) {
         PageHeader({
           title: '历史记录',
-          subtitle: `已保存 ${this.store.history.length} 条`,
+          showRightIcon: this.store.history.length > 0,
+          rightIcon: $r('app.media.ui_history_clear'),
           colors: this.colors,
-          onBack: (): void => this.onBack()
+          onBack: (): void => this.onBack(),
+          onRightPress: (): void => this.clearDialog.open()
         })
+
+        Row({ space: 6 }) {
+          ForEach(['全部', '转盘', '抽签', '抛硬币', '数字', '是或否'],
+            (label: string): void => {
+              Button(label, { type: ButtonType.Normal })
+                .width(54)
+                .height(34)
+                .padding(0)
+                .fontSize(11)
+                .fontColor(this.filter === label ? '#FFFFFF' : this.colors.text)
+                .backgroundColor(this.filter === label ? this.colors.accent : this.colors.card)
+                .borderRadius(14)
+                .onClick((): void => {
+                  this.filter = label;
+                })
+            })
+        }
+        .width('100%')
 
         if (this.store.history.length === 0) {
           Column({ space: AppSpacing.SM }) {
@@ -92,61 +215,45 @@ export struct HistoryPage {
           .layoutWeight(1)
           .justifyContent(FlexAlign.Center)
         } else {
-          List({ space: 10 }) {
-            ForEach(this.store.history, (record: HistoryRecord): void => {
+          List({ space: 12 }) {
+            ForEach(this.dateGroups(), (group: string): void => {
               ListItem() {
-                Column({ space: 8 }) {
-                  Row() {
-                    Text(this.toolName(record.toolType))
-                      .fontSize(AppFontSizes.CAPTION)
-                      .fontColor(this.colors.accent)
-                    Blank()
-                    Text(TimeFormatter.format(record.createdAt))
-                      .fontSize(AppFontSizes.CAPTION)
-                      .fontColor(this.colors.subtext)
-                  }
-                  .width('100%')
-                  Text(record.title)
+                Column({ space: 6 }) {
+                  Text(group)
                     .width('100%')
-                    .fontSize(AppFontSizes.BODY)
-                    .fontWeight(FontWeight.Medium)
-                    .fontColor(this.colors.text)
-                  Text(record.result)
-                    .width('100%')
-                    .fontSize(AppFontSizes.HEADING)
+                    .fontSize(16)
                     .fontWeight(FontWeight.Bold)
                     .fontColor(this.colors.text)
+                  Column({ space: 1 }) {
+                    ForEach(this.recordsForGroup(group),
+                      (record: HistoryRecord): void => {
+                        this.historyRow(record)
+                      },
+                      (record: HistoryRecord): string => record.id)
+                  }
+                  .width('100%')
+                  .borderRadius(AppRadii.CARD)
+                  .clip(true)
+                  .border({ width: 1, color: this.colors.border })
                 }
                 .width('100%')
-                .padding(16)
-                .backgroundColor(this.colors.card)
-                .borderRadius(AppRadii.CARD)
-                .border({ width: 1, color: this.colors.border })
-                .onClick((): void => {
-                  this.selected = record;
-                })
-                .gesture(
-                  LongPressGesture({ duration: 600 })
-                    .onAction((): void => {
-                      this.remove(record);
-                    })
-                )
               }
-            }, (record: HistoryRecord): string => record.id)
+            }, (group: string): string => group)
           }
           .layoutWeight(1)
           .width('100%')
-
-          AppButton({
-            label: '清空全部历史',
-            variant: AppButtonVariant.DANGER,
-            onPress: (): void => this.clearDialog.open()
-          })
+          .scrollBar(BarState.Off)
         }
+
+        AppButton({
+          label: '返回首页',
+          variant: AppButtonVariant.SECONDARY,
+          onPress: (): void => this.onBack()
+        })
       }
       .width('100%')
       .height('100%')
-      .padding({ left: 20, right: 20, top: 18, bottom: 24 })
+      .padding({ left: 16, right: 16, top: 14, bottom: 22 })
       .backgroundColor(this.colors.background)
 
       if (this.selected !== null) {
