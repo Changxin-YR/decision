@@ -28,6 +28,8 @@
 | 抽签动效 | “谁先开始”模板 | 点击开始抽签 | 五段摇动后签条正向升起并显示结果 | `passed` | `docs/qa/screenshots/2026-07-29-draw-motion-final.jpeg` |
 | 转盘二次转动 | 手动输入 Alpha/Beta | 连续转动两次并关闭结果 | Canvas、只读结果行和输入框均保留 Alpha/Beta | `passed` | `docs/qa/screenshots/2026-07-29-wheel-manual-repeat-after-two.jpeg` |
 | 功能回归 | 测试 HAP 已安装 | 运行 OpenHarmonyTestRunner | 67/67 通过 | `passed` | `docs/qa/2026-07-29-ui-restoration.md` |
+| 最终版本恢复 | 源码被误回退 | 重放原始成功补丁并重新构建安装 | 68/68 设备测试通过 | `passed` | `docs/qa/restored-final-random.json` |
+| 随机数字单击 | 默认范围 1–100 | 单击一次 1–10 | 最大值为 10，仅 1–10 高亮 | `passed` | `docs/qa/restored-final-random.json` |
 
 ### 多设备覆盖
 
