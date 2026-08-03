@@ -18,7 +18,7 @@ export struct AppCard {
     .border({ width: 1, color: this.colors.border })
     .shadow({
       radius: 10,
-      color: '#0D27496B',
+      color: this.colors.shadow,
       offsetX: 0,
       offsetY: 3
     })

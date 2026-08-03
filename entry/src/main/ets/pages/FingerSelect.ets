@@ -181,11 +181,13 @@ export struct FingerSelectPage {
       }, (point: FingerPoint): string => `${point.id}`)
 
       Column({ space: 14 }) {
-        AppButton({
+          AppButton({
+            colors: this.colors,
           label: '开始选择',
           onPress: (): void => this.reset()
         })
-        AppButton({
+          AppButton({
+            colors: this.colors,
           label: '返回首页',
           variant: AppButtonVariant.SECONDARY,
           onPress: (): void => this.onBack()

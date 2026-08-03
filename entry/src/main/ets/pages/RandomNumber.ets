@@ -188,10 +188,11 @@ export struct RandomNumberPage {
         .borderRadius(12)
         .shadow({ radius: 8, color: '#0D27496B', offsetX: 0, offsetY: 3 })
 
-        AppButton({ label: '◇  生成数字', onPress: (): void => this.generate() })
+        AppButton({ colors: this.colors, label: '◇  生成数字', onPress: (): void => this.generate() })
         if (this.resultText.length > 0) {
           Column({ space: 12 }) {
             AppButton({
+              colors: this.colors,
               label: '复制',
               variant: AppButtonVariant.SECONDARY,
               onPress: (): void => {
@@ -199,6 +200,7 @@ export struct RandomNumberPage {
               }
             })
             AppButton({
+              colors: this.colors,
               label: this.saved ? '已保存' : '保存',
               isEnabled: !this.saved,
               onPress: (): void => {

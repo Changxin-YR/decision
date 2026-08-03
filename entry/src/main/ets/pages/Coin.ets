@@ -158,12 +158,14 @@ export struct CoinPage {
         .borderRadius(12)
         .shadow({ radius: 9, color: '#0D27496B', offsetX: 0, offsetY: 3 })
 
-        AppButton({
+          AppButton({
+            colors: this.colors,
           label: this.running ? AppStrings.FLIPPING : `⟳  ${AppStrings.TOSS}`,
           isEnabled: !this.running,
           onPress: (): void => this.toss()
         })
-        AppButton({
+          AppButton({
+            colors: this.colors,
           label: `⟳  ${AppStrings.RESET_STATS}`,
           variant: AppButtonVariant.SECONDARY,
           isEnabled: !this.running,
