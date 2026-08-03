@@ -264,6 +264,7 @@ export struct WheelPage {
           })
 
           AppButton({
+            colors: this.colors,
             label: this.running ? AppStrings.WHEEL_RUNNING : AppStrings.START_WHEEL,
             isEnabled: !this.running,
             onPress: (): void => this.spin()
@@ -326,6 +327,7 @@ export struct WheelPage {
           }
 
           AppButton({
+            colors: this.colors,
             label: AppStrings.SAVE_TEMPLATE,
             variant: AppButtonVariant.SECONDARY,
             isEnabled: !this.running,
@@ -333,6 +335,7 @@ export struct WheelPage {
           })
           if (this.result.length > 0) {
             AppButton({
+              colors: this.colors,
               label: this.saved ? AppStrings.RESULT_SAVED : AppStrings.SAVE_RESULT,
               variant: AppButtonVariant.SECONDARY,
               isEnabled: !this.saved,

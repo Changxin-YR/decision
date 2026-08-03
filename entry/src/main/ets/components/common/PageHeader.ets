@@ -43,10 +43,11 @@ export struct PageHeader {
             .fontWeight(FontWeight.Medium)
             .fontColor(this.colors.text)
             .backgroundColor(this.colors.card)
+            .border({ width: 1, color: this.colors.border })
             .borderRadius(14)
             .shadow({
               radius: 9,
-              color: '#1427496B',
+              color: this.colors.shadow,
               offsetX: 0,
               offsetY: 2
             })
@@ -59,6 +60,7 @@ export struct PageHeader {
             .fontSize(AppFontSizes.BODY)
             .fontColor(this.colors.accent)
             .backgroundColor(this.colors.card)
+            .border({ width: 1, color: this.colors.border })
             .borderRadius(14)
             .onClick((): void => this.onRightPress())
         }
@@ -72,7 +74,7 @@ export struct PageHeader {
             .borderRadius(14)
             .shadow({
               radius: 8,
-              color: '#1427496B',
+              color: this.colors.shadow,
               offsetX: 0,
               offsetY: 2
             })

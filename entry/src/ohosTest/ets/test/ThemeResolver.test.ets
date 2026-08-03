@@ -16,16 +16,21 @@ export default function themeResolverTest(): void {
       expect(tokens.text).assertEqual(AppColors.LIGHT_TEXT);
       expect(tokens.border).assertEqual(AppColors.LIGHT_BORDER);
       expect(tokens.accent).assertEqual(AppColors.PRIMARY);
+      expect(tokens.isDark).assertFalse();
     });
 
     it('returnsDarkTokens', 0, () => {
       const tokens: ThemeTokens = ThemeResolver.resolve(ThemeMode.DARK, false);
 
-      expect(tokens.background).assertEqual(AppColors.DARK_BACKGROUND);
-      expect(tokens.card).assertEqual(AppColors.DARK_CARD);
+      expect(tokens.background).assertEqual('#071426');
+      expect(tokens.card).assertEqual('#101E35');
       expect(tokens.text).assertEqual(AppColors.DARK_TEXT);
-      expect(tokens.border).assertEqual(AppColors.DARK_BORDER);
+      expect(tokens.border).assertEqual('#294361');
       expect(tokens.accent).assertEqual(AppColors.PRIMARY);
+      expect(tokens.input).assertEqual('#0C1930');
+      expect(tokens.primaryStart).assertEqual('#2E83FF');
+      expect(tokens.primaryEnd).assertEqual('#1748D4');
+      expect(tokens.isDark).assertTrue();
     });
 
     it('followsSystemMode', 0, () => {

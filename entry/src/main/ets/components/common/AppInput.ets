@@ -17,7 +17,7 @@ export struct AppInput {
         .fontSize(14)
         .fontColor(this.colors.text)
         .placeholderColor(this.colors.subtext)
-        .backgroundColor(this.colors.card)
+        .backgroundColor(this.colors.input)
         .borderRadius(AppRadii.INPUT)
         .border({
           width: this.focused || this.error.length > 0 ? 2 : 1,

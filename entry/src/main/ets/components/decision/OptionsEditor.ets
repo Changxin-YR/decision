@@ -60,7 +60,7 @@ export struct OptionsEditor {
                 .fontSize(AppFontSizes.BODY)
                 .fontColor(this.colors.text)
                 .placeholderColor(this.colors.subtext)
-                .backgroundColor(this.colors.card)
+                .backgroundColor(this.colors.input)
                 .borderRadius(AppRadii.INPUT)
                 .border({ width: 1, color: this.colors.border })
                 .maxLength(AppLimits.MAX_OPTION_LENGTH)
@@ -93,7 +93,7 @@ export struct OptionsEditor {
             .border({ width: 1, color: this.colors.border })
             .shadow({
               radius: 7,
-              color: '#0A27496B',
+              color: this.colors.shadow,
               offsetX: 0,
               offsetY: 2
             })
