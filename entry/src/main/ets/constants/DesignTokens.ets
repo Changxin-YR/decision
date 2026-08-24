@@ -8,11 +8,11 @@ export class AppColors {
   static readonly LIGHT_TEXT: string = '#0B1F3A';
   static readonly LIGHT_SUBTEXT: string = '#8B97AB';
   static readonly LIGHT_BORDER: string = '#E6EBF2';
-  static readonly DARK_BACKGROUND: string = '#171A21';
-  static readonly DARK_CARD: string = '#242832';
+  static readonly DARK_BACKGROUND: string = '#071426';
+  static readonly DARK_CARD: string = '#101E35';
   static readonly DARK_TEXT: string = '#F5F7FB';
   static readonly DARK_SUBTEXT: string = '#9AA5B5';
-  static readonly DARK_BORDER: string = '#343A47';
+  static readonly DARK_BORDER: string = '#294361';
   static readonly ERROR: string = '#F05B63';
   static readonly SUCCESS: string = '#27AE60';
 }
@@ -20,10 +20,16 @@ export class AppColors {
 export interface ThemeTokens {
   background: string;
   card: string;
+  input: string;
   text: string;
   subtext: string;
   border: string;
   accent: string;
+  primaryStart: string;
+  primaryEnd: string;
+  glow: string;
+  shadow: string;
+  isDark: boolean;
   error: string;
   success: string;
 }
@@ -36,10 +42,16 @@ export class ThemeResolver {
       return {
         background: AppColors.DARK_BACKGROUND,
         card: AppColors.DARK_CARD,
+        input: '#0C1930',
         text: AppColors.DARK_TEXT,
         subtext: AppColors.DARK_SUBTEXT,
         border: AppColors.DARK_BORDER,
         accent: AppColors.PRIMARY,
+        primaryStart: '#2E83FF',
+        primaryEnd: '#1748D4',
+        glow: '#663C8CFF',
+        shadow: '#80010818',
+        isDark: true,
         error: AppColors.ERROR,
         success: AppColors.SUCCESS
       };
@@ -47,10 +59,16 @@ export class ThemeResolver {
     return {
       background: AppColors.LIGHT_BACKGROUND,
       card: AppColors.LIGHT_CARD,
+      input: AppColors.LIGHT_CARD,
       text: AppColors.LIGHT_TEXT,
       subtext: AppColors.LIGHT_SUBTEXT,
       border: AppColors.LIGHT_BORDER,
       accent: AppColors.PRIMARY,
+      primaryStart: AppColors.PRIMARY,
+      primaryEnd: AppColors.PRIMARY,
+      glow: '#00000000',
+      shadow: '#0D27496B',
+      isDark: false,
       error: AppColors.ERROR,
       success: AppColors.SUCCESS
     };

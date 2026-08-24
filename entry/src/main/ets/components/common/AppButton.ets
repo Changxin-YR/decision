@@ -1,4 +1,5 @@
-import { AppColors, AppFontSizes, AppRadii } from '../../constants/DesignTokens';
+import { AppColors, AppFontSizes, AppRadii, ThemeResolver, ThemeTokens } from '../../constants/DesignTokens';
+import { ThemeMode } from '../../models/AppModels';
 
 export enum AppButtonVariant {
   PRIMARY = 'primary',
@@ -9,6 +10,7 @@ export enum AppButtonVariant {
 
 @Component
 export struct AppButton {
+  @Prop colors: ThemeTokens = ThemeResolver.resolve(ThemeMode.LIGHT, false);
   @Prop label: string = '';
   @Prop variant: AppButtonVariant = AppButtonVariant.PRIMARY;
   @Prop isEnabled: boolean = true;
@@ -23,17 +25,17 @@ export struct AppButton {
       return '#00000000';
     }
     if (this.variant === AppButtonVariant.SECONDARY) {
-      return '#FFFFFF';
+      return this.colors.card;
     }
     if (this.variant === AppButtonVariant.DANGER) {
       return AppColors.ERROR;
     }
-    return AppColors.PRIMARY;
+    return this.colors.primaryStart;
   }
 
   private foreground(): string {
     if (this.variant === AppButtonVariant.TEXT) {
-      return AppColors.PRIMARY;
+      return this.colors.accent;
     }
     if (this.variant === AppButtonVariant.SECONDARY) {
       return AppColors.PRIMARY;
@@ -53,11 +55,11 @@ export struct AppButton {
       .border({
         width: this.variant === AppButtonVariant.SECONDARY ? 1 : 0,
         color: this.variant === AppButtonVariant.SECONDARY ?
-          AppColors.PRIMARY : '#00000000'
+          this.colors.border : '#00000000'
       })
       .shadow(this.variant === AppButtonVariant.PRIMARY ? {
         radius: 10,
-        color: '#292D94F4',
+        color: this.colors.glow,
         offsetX: 0,
         offsetY: 4
       } : {

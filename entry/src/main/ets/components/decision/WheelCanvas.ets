@@ -14,6 +14,9 @@ export struct WheelCanvas {
   private settings: RenderingContextSettings = new RenderingContextSettings(true);
   private context: CanvasRenderingContext2D =
     new CanvasRenderingContext2D(this.settings);
+  private readonly deepColors: string[] = [
+    '#7255C8', '#C3699B', '#D5A248', '#5C927F', '#346BBB', '#A05D6D'
+  ];
 
   private redraw(): void {
     this.draw();
@@ -35,7 +38,9 @@ export struct WheelCanvas {
       this.context.moveTo(center, center);
       this.context.arc(center, center, radius, start, end);
       this.context.closePath();
-      this.context.fillStyle = WHEEL_COLORS[index % WHEEL_COLORS.length];
+      this.context.fillStyle = this.colors.isDark ?
+        this.deepColors[index % this.deepColors.length] :
+        WHEEL_COLORS[index % WHEEL_COLORS.length];
       this.context.fill();
       this.context.strokeStyle = '#FFFFFF';
       this.context.lineWidth = 2;
@@ -46,7 +51,7 @@ export struct WheelCanvas {
       const labelX: number = center + Math.cos(labelAngle) * radius * 0.62;
       const labelY: number = center + Math.sin(labelAngle) * radius * 0.62;
       this.context.translate(labelX, labelY);
-      this.context.fillStyle = '#53647A';
+      this.context.fillStyle = this.colors.isDark ? '#F5F7FB' : '#53647A';
       const crowded: boolean = this.options.length > 8;
       this.context.font =
         `${WheelLabelLayout.fontSize(this.options.length)}px sans-serif`;
@@ -76,6 +81,8 @@ export struct WheelCanvas {
         .fill(this.colors.card)
         .stroke(this.colors.border)
         .strokeWidth(2)
+        .shadow({ radius: this.colors.isDark ? 16 : 0, color: this.colors.glow,
+          offsetX: 0, offsetY: 0 })
 
       Text('转')
         .fontSize(20)

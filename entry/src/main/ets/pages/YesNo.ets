@@ -117,9 +117,9 @@ export struct YesNoPage {
             .fontSize(30)
             .fontWeight(FontWeight.Bold)
             .fontColor(this.colors.accent)
-            .backgroundColor('#F1F8FE')
-            .border({ width: 2, color: '#D4EBFC' })
-            .shadow({ radius: 14, color: '#182D94F4', offsetX: 0, offsetY: 4 })
+            .backgroundColor(this.colors.isDark ? '#10234B' : '#F1F8FE')
+            .border({ width: 2, color: this.colors.isDark ? this.colors.accent : '#D4EBFC' })
+            .shadow({ radius: 18, color: this.colors.isDark ? this.colors.glow : '#182D94F4', offsetX: 0, offsetY: 4 })
             .enabled(!this.running)
             .onClick((): void => this.decide())
           Button(this.running ? '…' : '否', { type: ButtonType.Circle })
@@ -136,12 +136,14 @@ export struct YesNoPage {
         }
         Blank()
         AppButton({
+          colors: this.colors,
           label: '交给直觉',
           isEnabled: !this.running,
           onPress: (): void => this.decide()
         })
         if (this.result.length > 0) {
           AppButton({
+            colors: this.colors,
             label: this.saved ? '已保存' : '保存结果',
             isEnabled: !this.saved,
             onPress: (): void => {

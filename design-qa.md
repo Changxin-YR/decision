@@ -1,5 +1,14 @@
 # 设计与交互 QA
 
+## 2026-08-03 夜间模式视觉还原
+
+| 场景 | 验证 | 结果 |
+| --- | --- | --- |
+| 深色令牌 | ThemeResolver 断言覆盖深色背景、卡片、输入、描边、主操作与浅色隔离 | `passed` |
+| 主/测试 HAP | 使用 `scripts/build-harmony.ps1` 构建 | `passed` |
+| 静态检查 | 使用 `scripts/check-standard.ps1` | `passed` |
+| phone 设备截图 | 本轮未启动可用模拟器 | `blocked` |
+
 状态仅使用 `passed`、`blocked` 或明确失败描述。
 
 ## 2026-07-29｜API 24 phone 模拟器

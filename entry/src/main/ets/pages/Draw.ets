@@ -387,11 +387,13 @@ export struct DrawPage {
               .fontColor(this.colors.text)
               .textAlign(TextAlign.Center)
             AppButton({
+              colors: this.colors,
               label: '重新开始',
               onPress: (): void => this.resetDraws()
             })
           } else {
             AppButton({
+              colors: this.colors,
               label: this.running ? '抽取中…' : '开始抽签',
               isEnabled: !this.running,
               onPress: (): void => this.draw()
@@ -422,6 +424,7 @@ export struct DrawPage {
           }
 
           AppButton({
+            colors: this.colors,
             label: '保存为模板',
             variant: AppButtonVariant.SECONDARY,
             isEnabled: !this.running,
@@ -429,6 +432,7 @@ export struct DrawPage {
           })
           if (this.result.length > 0) {
             AppButton({
+              colors: this.colors,
               label: this.saved ? '结果已保存' : '保存结果',
               variant: AppButtonVariant.SECONDARY,
               isEnabled: !this.saved,
