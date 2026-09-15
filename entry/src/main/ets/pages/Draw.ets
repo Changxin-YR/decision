@@ -194,6 +194,7 @@ export struct DrawPage {
     }
     this.running = false;
     this.resetMotion();
+    soundService.stop();
   }
 
   private ensureSession(values: string[]): DrawSession {
@@ -203,7 +204,7 @@ export struct DrawPage {
     return session;
   }
 
-  private draw(): void {
+  private async draw(): Promise<void> {
     const validation = OptionValidator.validate(this.optionTexts());
     if (!validation.valid) {
       this.error = validation.message;
@@ -227,7 +228,10 @@ export struct DrawPage {
     this.clearTimers();
     this.resetMotion();
     this.liftedLabel = pending;
-    soundService.play(SoundEffect.DRAW);
+    await soundService.play(SoundEffect.DRAW);
+    if (!this.running) {
+      return;
+    }
     feedbackService.impact(DrawMotionPlan.CUES[0].duration);
     DrawMotionPlan.SHAKES.forEach((stage: DrawShakeStage): void => {
       this.timerIds.push(setTimeout((): void => {
@@ -274,14 +278,15 @@ export struct DrawPage {
     }, DrawMotionPlan.LIFT_PEAK));
     this.timerIds.push(setTimeout((): void => {
       this.getUIContext().animateTo({
-        duration: 300,
+        duration: DrawMotionPlan.RESULT_AT - DrawMotionPlan.LIFT_SETTLE,
         curve: Curve.EaseInOut
       }, (): void => {
         this.revealGlow = 0.62;
       });
     }, DrawMotionPlan.LIFT_SETTLE));
-    this.timerIds.push(setTimeout((): void => {
+    this.timerIds.push(setTimeout(async (): Promise<void> => {
       this.clearTimers();
+      await soundService.play(SoundEffect.RESULT);
       if (!session.complete()) {
         return;
       }
@@ -298,7 +303,6 @@ export struct DrawPage {
         createdAt: new Date().toISOString()
       };
       feedbackService.impact(DrawMotionPlan.CUES[2].duration);
-      soundService.play(SoundEffect.RESULT);
       if (appStore.settings.autoSaveHistory) {
         this.save();
       }
@@ -396,7 +400,9 @@ export struct DrawPage {
               colors: this.colors,
               label: this.running ? '抽取中…' : '开始抽签',
               isEnabled: !this.running,
-              onPress: (): void => this.draw()
+              onPress: (): void => {
+                this.draw();
+              }
             })
           }
 
@@ -450,6 +456,7 @@ export struct DrawPage {
       .width('100%')
       .height('100%')
       .scrollBar(BarState.Off)
+      .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
       .backgroundColor(this.colors.background)
 
       ResultSheet({
@@ -470,5 +477,6 @@ export struct DrawPage {
     }
     .width('100%')
     .height('100%')
+    .constraintSize({ maxWidth: 720 })
   }
 }

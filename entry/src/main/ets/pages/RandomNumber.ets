@@ -8,6 +8,7 @@ import { NumberValidator } from '../domain/validation/NumberValidator';
 import { HistoryRecord, ToolType } from '../models/AppModels';
 import { clipboardService } from '../services/ClipboardService';
 import { feedbackService } from '../services/FeedbackService';
+import { SoundEffect, soundService } from '../services/SoundService';
 import { appStore } from '../stores/AppStore';
 
 @Component
@@ -48,6 +49,7 @@ export struct RandomNumberPage {
       createdAt: new Date().toISOString()
     };
     feedbackService.impact();
+    soundService.play(SoundEffect.RESULT);
     if (appStore.settings.autoSaveHistory) {
       this.save();
     }
@@ -104,9 +106,12 @@ export struct RandomNumberPage {
             }
             .layoutWeight(1).alignItems(HorizontalAlign.Start)
             TextInput({ text: this.minText })
-              .width(86).height(42).type(InputType.Number)
+              .width(86).height(42).type(InputType.Normal)
               .fontSize(AppFontSizes.BODY)
-              .backgroundColor(this.colors.background)
+              .fontColor(this.colors.isDark ? '#FFFFFF' : this.colors.text)
+              .backgroundColor(this.colors.input)
+              .border({ width: 1, color: this.colors.border })
+              .borderRadius(22)
               .onChange((value: string): void => {
                 this.minText = value;
                 this.selectedRange = QuickRangePreset.match(value, this.maxText);
@@ -119,9 +124,12 @@ export struct RandomNumberPage {
             }
             .layoutWeight(1).alignItems(HorizontalAlign.Start)
             TextInput({ text: this.maxText })
-              .width(86).height(42).type(InputType.Number)
+              .width(86).height(42).type(InputType.Normal)
               .fontSize(AppFontSizes.BODY)
-              .backgroundColor(this.colors.background)
+              .fontColor(this.colors.isDark ? '#FFFFFF' : this.colors.text)
+              .backgroundColor(this.colors.input)
+              .border({ width: 1, color: this.colors.border })
+              .borderRadius(22)
               .onChange((value: string): void => {
                 this.maxText = value;
                 this.selectedRange = QuickRangePreset.match(this.minText, value);
@@ -136,7 +144,10 @@ export struct RandomNumberPage {
             TextInput({ text: this.countText })
               .width(86).height(42).type(InputType.Number)
               .fontSize(AppFontSizes.BODY)
-              .backgroundColor(this.colors.background)
+              .fontColor(this.colors.isDark ? '#FFFFFF' : this.colors.text)
+              .backgroundColor(this.colors.input)
+              .border({ width: 1, color: this.colors.border })
+              .borderRadius(22)
               .onChange((value: string): void => { this.countText = value; })
           }
           Row() {
@@ -153,7 +164,7 @@ export struct RandomNumberPage {
         .padding(18)
         .backgroundColor(this.colors.card)
         .borderRadius(12)
-        .shadow({ radius: 8, color: '#0D27496B', offsetX: 0, offsetY: 3 })
+        .shadow({ radius: 8, color: this.colors.shadow, offsetX: 0, offsetY: 3 })
 
         if (this.error.length > 0) {
           Text(this.error).fontColor(this.colors.error)
@@ -186,7 +197,7 @@ export struct RandomNumberPage {
         .padding(18)
         .backgroundColor(this.colors.card)
         .borderRadius(12)
-        .shadow({ radius: 8, color: '#0D27496B', offsetX: 0, offsetY: 3 })
+        .shadow({ radius: 8, color: this.colors.shadow, offsetX: 0, offsetY: 3 })
 
         AppButton({ colors: this.colors, label: '◇  生成数字', onPress: (): void => this.generate() })
         if (this.resultText.length > 0) {
@@ -217,6 +228,8 @@ export struct RandomNumberPage {
     .width('100%')
     .height('100%')
     .scrollBar(BarState.Off)
+    .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
+    .constraintSize({ maxWidth: 720 })
     .backgroundColor(this.colors.background)
   }
 }

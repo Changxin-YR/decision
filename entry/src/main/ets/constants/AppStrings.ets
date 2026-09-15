@@ -23,7 +23,7 @@ export class AppStrings {
   static readonly FINGER_GUIDE: string = '请大家把手指放在屏幕上';
   static readonly COIN_GUIDE: string = '点击硬币开始';
   static readonly EMPTY_HISTORY: string = '还没有保存过决定';
-  static readonly APP_VERSION: string = '做个决定 · 1.0.0';
+  static readonly APP_VERSION: string = '做个决定 · 1.0.1';
   static readonly HEADS: string = '正面';
   static readonly TAILS: string = '反面';
   static readonly TOSS: string = '抛一次';

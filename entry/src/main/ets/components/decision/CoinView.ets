@@ -10,20 +10,12 @@ export struct CoinView {
 
   build() {
     Stack() {
-      Image($r('app.media.ui_coin'))
+      Image(this.colors.isDark ?
+        $r('app.media.ui_coin_dark') : $r('app.media.ui_coin'))
         .width(250)
         .height(274)
         .objectFit(ImageFit.Contain)
         .rotate({ y: 1, angle: this.rotation })
-      if (this.revealed) {
-        Text(this.side === CoinSide.HEADS ? '正' : '反')
-          .fontSize(38)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.colors.accent)
-          .backgroundColor('#CCFFFFFF')
-          .borderRadius(36)
-          .padding(16)
-      }
     }
     .width(270)
     .height(286)

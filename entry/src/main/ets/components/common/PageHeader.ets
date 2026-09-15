@@ -6,9 +6,10 @@ export struct PageHeader {
   @Prop subtitle: string = '';
   @Prop showBack: boolean = true;
   @Prop colors: ThemeTokens;
+  @Prop backButtonSize: number = 48;
+  @Prop backButtonRadius: number = 14;
   @Prop rightLabel: string = '';
-  @Prop showRightIcon: boolean = false;
-  @Prop rightIcon: Resource = $r('app.media.ui_home_history');
+  @Prop rightGlyph: string = '';
   onBack: () => void = (): void => {
   };
   onRightPress: () => void = (): void => {
@@ -37,14 +38,14 @@ export struct PageHeader {
       Row() {
         if (this.showBack) {
           Button('‹', { type: ButtonType.Normal })
-            .width(48)
-            .height(48)
+            .width(this.backButtonSize)
+            .height(this.backButtonSize)
             .fontSize(34)
             .fontWeight(FontWeight.Medium)
             .fontColor(this.colors.text)
             .backgroundColor(this.colors.card)
             .border({ width: 1, color: this.colors.border })
-            .borderRadius(14)
+            .borderRadius(this.backButtonRadius)
             .shadow({
               radius: 9,
               color: this.colors.shadow,
@@ -64,14 +65,17 @@ export struct PageHeader {
             .borderRadius(14)
             .onClick((): void => this.onRightPress())
         }
-        if (this.showRightIcon) {
-          Image(this.rightIcon)
+        if (this.rightGlyph.length > 0) {
+          Text(this.rightGlyph)
             .width(44)
             .height(44)
-            .padding(8)
-            .objectFit(ImageFit.Contain)
+            .fontSize(22)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.colors.accent)
+            .textAlign(TextAlign.Center)
             .backgroundColor(this.colors.card)
             .borderRadius(14)
+            .border({ width: 1, color: this.colors.border })
             .shadow({
               radius: 8,
               color: this.colors.shadow,

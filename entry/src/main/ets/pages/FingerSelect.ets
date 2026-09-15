@@ -1,16 +1,19 @@
 import { AppButton, AppButtonVariant } from '../components/common/AppButton';
+import { PageHeader } from '../components/common/PageHeader';
 import {
   AppFontSizes,
   AppSpacing,
   ThemeTokens
 } from '../constants/DesignTokens';
 import { AppStrings } from '../constants/AppStrings';
+import { DecisionTiming } from '../domain/feedback/DecisionTiming';
 import {
   FingerSelectionMachine,
   FingerState
 } from '../domain/state/FingerSelectionMachine';
 import { appLifecycleBus } from '../services/AppLifecycleBus';
 import { feedbackService } from '../services/FeedbackService';
+import { SoundEffect, soundService } from '../services/SoundService';
 
 interface FingerPoint {
   id: number;
@@ -35,6 +38,7 @@ export struct FingerSelectPage {
   private machine: FingerSelectionMachine = new FingerSelectionMachine();
   private countdownTimer: number = -1;
   private unlockTimer: number = -1;
+  private countdownRequest: number = 0;
   private unsubscribe: (() => void) | null = null;
 
   aboutToAppear(): void {
@@ -54,6 +58,7 @@ export struct FingerSelectPage {
   }
 
   private clearTimers(): void {
+    this.countdownRequest += 1;
     if (this.countdownTimer >= 0) {
       clearInterval(this.countdownTimer);
       this.countdownTimer = -1;
@@ -70,22 +75,39 @@ export struct FingerSelectPage {
     this.selectedId = this.machine.selectedId;
   }
 
-  private startCountdown(): void {
+  private async startCountdown(): Promise<void> {
+    const request: number = ++this.countdownRequest;
     if (this.countdownTimer >= 0) {
       clearInterval(this.countdownTimer);
+      this.countdownTimer = -1;
     }
-    this.countdownTimer = setInterval((): void => {
+    await soundService.play(SoundEffect.TAP);
+    if (request !== this.countdownRequest ||
+      this.machine.state !== FingerState.COUNTDOWN) {
+      return;
+    }
+    this.countdownTimer = setInterval(async (): Promise<void> => {
+      if (request !== this.countdownRequest) {
+        return;
+      }
       this.machine.tick();
-      this.syncMachine();
       if (this.machine.state === FingerState.LOCKED) {
         clearInterval(this.countdownTimer);
         this.countdownTimer = -1;
+        await soundService.play(SoundEffect.RESULT);
+        if (request !== this.countdownRequest ||
+          this.machine.state !== FingerState.LOCKED) {
+          return;
+        }
+        this.syncMachine();
         feedbackService.impact(80);
         this.unlockTimer = setTimeout((): void => {
           this.reset();
         }, 3000);
+      } else {
+        this.syncMachine();
       }
-    }, 1000);
+    }, DecisionTiming.FINGER_RESULT_AT / 3);
   }
 
   private updateTouches(touches: TouchObject[]): void {
@@ -106,9 +128,13 @@ export struct FingerSelectPage {
     const after: string = this.machine.activeIds.join(',');
     if (this.machine.state === FingerState.COUNTDOWN && before !== after) {
       this.startCountdown();
-    } else if (this.machine.state === FingerState.IDLE && this.countdownTimer >= 0) {
-      clearInterval(this.countdownTimer);
-      this.countdownTimer = -1;
+    } else if (this.machine.state === FingerState.IDLE) {
+      this.countdownRequest += 1;
+      if (this.countdownTimer >= 0) {
+        clearInterval(this.countdownTimer);
+        this.countdownTimer = -1;
+      }
+      soundService.stop();
     }
   }
 
@@ -117,20 +143,12 @@ export struct FingerSelectPage {
     this.machine.reset();
     this.points = [];
     this.syncMachine();
+    soundService.stop();
   }
 
-  build() {
+  @Builder
+  private touchSurface() {
     Stack() {
-      Button('‹', { type: ButtonType.Normal })
-        .width(36)
-        .height(36)
-        .fontSize(28)
-        .fontColor(this.colors.text)
-        .backgroundColor(this.colors.card)
-        .borderRadius(18)
-        .position({ x: 16, y: 14 })
-        .onClick((): void => this.onBack())
-
       Column({ space: 14 }) {
         Text(this.state === FingerState.LOCKED ? '选中你了！' : '指尖选择')
           .fontSize(30)
@@ -148,17 +166,58 @@ export struct FingerSelectPage {
         Text(this.state === FingerState.IDLE ? '至少需要两根手指' : '')
           .fontSize(AppFontSizes.BODY)
           .fontColor(this.colors.subtext)
+        if (this.points.length === 0) {
+          Image(this.colors.isDark ?
+            $r('app.media.ui_finger_guide_dark_v2') : $r('app.media.ui_finger_guide'))
+            .width('82%')
+            .height(330)
+            .objectFit(ImageFit.Contain)
+            .borderRadius(this.colors.isDark ? 18 : 0)
+            .margin({ top: 10 })
+        }
       }
-      .position({ x: 20, y: 92 })
-      .width('calc(100% - 40vp)')
+      .width('100%')
+      .padding({ left: 20, right: 20, top: 12 })
+      .alignItems(HorizontalAlign.Center)
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .onTouch((event: TouchEvent): void => {
+      this.updateTouches(event.touches);
+    })
+  }
 
-      if (this.points.length === 0) {
-        Image($r('app.media.ui_finger_guide'))
-          .width('82%')
-          .height(330)
-          .objectFit(ImageFit.Contain)
-          .position({ x: '9%', y: 225 })
+  build() {
+    Stack() {
+      Column() {
+        PageHeader({
+          title: '',
+          colors: this.colors,
+          backButtonSize: 44,
+          backButtonRadius: 13,
+          onBack: (): void => this.onBack()
+        })
+
+        this.touchSurface()
+
+        Column({ space: 14 }) {
+          AppButton({
+            colors: this.colors,
+            label: '重新开始',
+            onPress: (): void => this.reset()
+          })
+          AppButton({
+            colors: this.colors,
+            label: '返回首页',
+            variant: AppButtonVariant.SECONDARY,
+            onPress: (): void => this.onBack()
+          })
+        }
+        .width('100%')
+        .padding({ left: 28, right: 28, bottom: 8 })
       }
+      .width('100%')
+      .height('100%')
 
       ForEach(this.points, (point: FingerPoint, index: number): void => {
         Stack() {
@@ -179,36 +238,10 @@ export struct FingerSelectPage {
         .height(116)
         .position({ x: point.x - 58, y: point.y - 58 })
       }, (point: FingerPoint): string => `${point.id}`)
-
-      Column({ space: 14 }) {
-          AppButton({
-            colors: this.colors,
-          label: '开始选择',
-          onPress: (): void => this.reset()
-        })
-          AppButton({
-            colors: this.colors,
-          label: '返回首页',
-          variant: AppButtonVariant.SECONDARY,
-          onPress: (): void => this.onBack()
-        })
-      }
-      .width('100%')
-      .padding({ left: 28, right: 28 })
-      .position({ x: 0, y: 570 })
-
-      Text('ⓘ 小提示：保持按住，结果更随机哦')
-        .width('100%')
-        .fontSize(AppFontSizes.CAPTION)
-        .fontColor(this.colors.subtext)
-        .textAlign(TextAlign.Center)
-        .position({ x: 0, y: 742 })
     }
     .width('100%')
     .height('100%')
+    .constraintSize({ maxWidth: 720 })
     .backgroundColor(this.colors.background)
-    .onTouch((event: TouchEvent): void => {
-      this.updateTouches(event.touches);
-    })
   }
 }

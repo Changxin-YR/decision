@@ -1,11 +1,26 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "./signing/default_decision_Il52hZBPXyNPj5FrgUpj-PjHFqYKjXutmUfCF-W5z1U=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "",
+          "profile": "./signing/default_decision_Il52hZBPXyNPj5FrgUpj-PjHFqYKjXutmUfCF-W5z1U=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "./signing/default_decision_Il52hZBPXyNPj5FrgUpj-PjHFqYKjXutmUfCF-W5z1U=.p12",
+          "storePassword": ""
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
-        "compatibleSdkVersion": "6.1.1(24)",
-        "targetSdkVersion": "6.1.1(24)",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "6.0.2(22)",
+        "targetSdkVersion": "6.0.2(22)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {

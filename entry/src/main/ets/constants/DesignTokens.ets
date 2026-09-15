@@ -12,7 +12,7 @@ export class AppColors {
   static readonly DARK_CARD: string = '#101E35';
   static readonly DARK_TEXT: string = '#F5F7FB';
   static readonly DARK_SUBTEXT: string = '#9AA5B5';
-  static readonly DARK_BORDER: string = '#294361';
+  static readonly DARK_BORDER: string = '#203654';
   static readonly ERROR: string = '#F05B63';
   static readonly SUCCESS: string = '#27AE60';
 }
@@ -35,9 +35,16 @@ export interface ThemeTokens {
 }
 
 export class ThemeResolver {
+  static isDark(mode: ThemeMode, systemDark: boolean): boolean {
+    return mode === ThemeMode.DARK || (mode === ThemeMode.SYSTEM && systemDark);
+  }
+
+  static systemBarContentColor(mode: ThemeMode, systemDark: boolean): string {
+    return ThemeResolver.isDark(mode, systemDark) ? '#FFFFFF' : AppColors.LIGHT_TEXT;
+  }
+
   static resolve(mode: ThemeMode, systemDark: boolean): ThemeTokens {
-    const dark: boolean = mode === ThemeMode.DARK ||
-      (mode === ThemeMode.SYSTEM && systemDark);
+    const dark: boolean = ThemeResolver.isDark(mode, systemDark);
     if (dark) {
       return {
         background: AppColors.DARK_BACKGROUND,

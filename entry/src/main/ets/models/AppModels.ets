@@ -50,7 +50,7 @@ export interface DecisionOption {
 
 export function createDefaultSettings(): AppSettings {
   return {
-    soundEnabled: true,
+    soundEnabled: false,
     vibrationEnabled: true,
     themeMode: ThemeMode.SYSTEM,
     autoSaveHistory: false

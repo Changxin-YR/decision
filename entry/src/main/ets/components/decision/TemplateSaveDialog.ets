@@ -85,12 +85,14 @@ export struct TemplateSaveDialog {
       }
       Column({ space: 12 }) {
         AppButton({
+          colors: this.colors,
           label: '取消',
           variant: AppButtonVariant.SECONDARY,
           isEnabled: !this.saving,
           onPress: (): void => this.controller.close()
         })
         AppButton({
+          colors: this.colors,
           label: this.saving ? '保存中…' : '保存',
           isEnabled: !this.saving,
           onPress: (): void => {

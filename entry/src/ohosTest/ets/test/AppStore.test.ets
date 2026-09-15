@@ -43,7 +43,8 @@ export default function appStoreTest(): void {
       await store.initialize();
 
       expect(store.initialized).assertTrue();
-      expect(store.settings.soundEnabled).assertTrue();
+      expect(store.settings.soundEnabled).assertFalse();
+      expect(store.settings.vibrationEnabled).assertTrue();
       expect(store.settings.themeMode).assertEqual(ThemeMode.SYSTEM);
     });
 
@@ -73,7 +74,7 @@ export default function appStoreTest(): void {
       const cleared: boolean = await store.clearAll();
 
       expect(cleared).assertTrue();
-      expect(store.settings.soundEnabled).assertTrue();
+      expect(store.settings.soundEnabled).assertFalse();
       expect(store.settings.vibrationEnabled).assertTrue();
       expect(store.settings.themeMode).assertEqual(ThemeMode.SYSTEM);
       expect(store.settings.autoSaveHistory).assertFalse();

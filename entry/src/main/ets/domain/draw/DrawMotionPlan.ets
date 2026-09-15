@@ -1,3 +1,5 @@
+import { DecisionTiming } from '../feedback/DecisionTiming';
+
 export enum DrawFeedbackKind {
   START = 'start',
   FINAL_SHAKE = 'final-shake',
@@ -35,7 +37,7 @@ export class DrawMotionPlan {
   static readonly PAUSE_END: number = 560;
   static readonly LIFT_PEAK: number = 1250;
   static readonly LIFT_SETTLE: number = 1450;
-  static readonly RESULT_AT: number = 2000;
+  static readonly RESULT_AT: number = DecisionTiming.DRAW_RESULT_AT;
   static readonly SHAKES: DrawShakeStage[] = [
     new DrawShakeStage(0, 70, 9, -3),
     new DrawShakeStage(70, 70, -10, 1),
@@ -46,6 +48,6 @@ export class DrawMotionPlan {
   static readonly CUES: DrawFeedbackCue[] = [
     new DrawFeedbackCue(0, 18, DrawFeedbackKind.START),
     new DrawFeedbackCue(350, 28, DrawFeedbackKind.FINAL_SHAKE),
-    new DrawFeedbackCue(2000, 70, DrawFeedbackKind.RESULT)
+    new DrawFeedbackCue(DecisionTiming.DRAW_RESULT_AT, 70, DrawFeedbackKind.RESULT)
   ];
 }

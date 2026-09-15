@@ -6,3 +6,8 @@
 
 生产资源由 `scripts/prepare-ui-assets.ps1` 从批准源图确定性裁切，不重新设计主体。
 原始源图保留在用户提供目录，仓库保存派生资源、裁切参数和用途清单。
+
+应用图标由用户在 2026-07-30 单独指定
+`C:\Users\27363\Desktop\Gemini_Generated_Image_cy0zdgcy0zdgcy0z(1).png`；本轮不重新设计，
+仅按 HarmonyOS 分层图标规范移除像素棋盘格并生成前景/背景资源。源文件与用途见
+`docs/ui/asset-manifest.md`。

@@ -13,7 +13,7 @@ export default function jsonCodecTest(): void {
     it('fallsBackForDamagedSettings', 0, () => {
       const settings: AppSettings = JsonCodec.decodeSettings('{broken');
 
-      expect(settings.soundEnabled).assertTrue();
+      expect(settings.soundEnabled).assertFalse();
       expect(settings.vibrationEnabled).assertTrue();
       expect(settings.themeMode).assertEqual(ThemeMode.SYSTEM);
       expect(settings.autoSaveHistory).assertFalse();

@@ -80,9 +80,11 @@ export struct PrivacyContent {
       }
       .layoutWeight(1)
       .scrollBar(BarState.Off)
+      .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
     }
     .width('100%')
     .height('100%')
+    .constraintSize({ maxWidth: 720 })
     .padding({ left: 16, right: 16, top: 14 })
     .backgroundColor(this.colors.background)
   }

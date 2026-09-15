@@ -11,7 +11,7 @@ import {
   ThemeTokens
 } from '../constants/DesignTokens';
 import { AppStrings } from '../constants/AppStrings';
-import { RandomService } from '../domain/random/RandomService';
+import { DecisionTiming } from '../domain/feedback/DecisionTiming';
 import { DraftChangeDetector } from '../domain/validation/DraftChangeDetector';
 import { OptionValidator } from '../domain/validation/OptionValidator';
 import {
@@ -168,9 +168,10 @@ export struct WheelPage {
     }
     this.session.cancel();
     this.running = false;
+    soundService.stop();
   }
 
-  private spin(): void {
+  private async spin(): Promise<void> {
     const validation = OptionValidator.validate(this.optionTexts());
     if (!validation.valid) {
       this.error = validation.message;
@@ -190,8 +191,11 @@ export struct WheelPage {
     this.result = '';
     this.saved = false;
     this.record = null;
-    soundService.play(SoundEffect.WHEEL);
-    const duration: number = RandomService.randomInteger(3000, 5000);
+    await soundService.play(SoundEffect.WHEEL);
+    if (!this.running) {
+      return;
+    }
+    const duration: number = DecisionTiming.WHEEL_RESULT_AT;
     const base: number = Math.ceil(this.rotation / 360) * 360;
     this.getUIContext().animateTo({
       duration: duration,
@@ -199,8 +203,9 @@ export struct WheelPage {
     }, (): void => {
       this.rotation = base + spin.targetAngle;
     });
-    this.timerId = setTimeout((): void => {
+    this.timerId = setTimeout(async (): Promise<void> => {
       this.timerId = -1;
+      await soundService.play(SoundEffect.RESULT);
       if (!this.session.complete()) {
         return;
       }
@@ -218,7 +223,6 @@ export struct WheelPage {
         createdAt: new Date().toISOString()
       };
       feedbackService.impact();
-      soundService.play(SoundEffect.RESULT);
       if (appStore.settings.autoSaveHistory) {
         this.save();
       }
@@ -267,7 +271,9 @@ export struct WheelPage {
             colors: this.colors,
             label: this.running ? AppStrings.WHEEL_RUNNING : AppStrings.START_WHEEL,
             isEnabled: !this.running,
-            onPress: (): void => this.spin()
+            onPress: (): void => {
+              this.spin();
+            }
           })
 
           Text(AppStrings.OPTIONS)
@@ -353,6 +359,7 @@ export struct WheelPage {
       .width('100%')
       .height('100%')
       .scrollBar(BarState.Off)
+      .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
       .backgroundColor(this.colors.background)
 
       ResultSheet({
@@ -375,5 +382,6 @@ export struct WheelPage {
     }
     .width('100%')
     .height('100%')
+    .constraintSize({ maxWidth: 720 })
   }
 }

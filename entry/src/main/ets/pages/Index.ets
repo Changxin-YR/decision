@@ -88,7 +88,9 @@ struct Index {
   @State private pathStack: NavPathStack = new NavPathStack();
   @State private store: AppStore = appStore;
   @State private contentWidth: number = 360;
-  @State private systemDark: boolean = false;
+  @StorageProp('systemDark') private systemDark: boolean = false;
+  @StorageProp('topSafeAreaPx') private topSafeAreaPx: number = 0;
+  @StorageProp('bottomSafeAreaPx') private bottomSafeAreaPx: number = 0;
 
   aboutToAppear(): void {
     this.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE);
@@ -102,22 +104,38 @@ struct Index {
     return ResponsiveLayout.columnsForWidth(this.contentWidth);
   }
 
+  private safeAreaLength(areaPx: number): string {
+    return `${Math.max(0, areaPx)}px`;
+  }
+
   private toolIcon(route: AppRoute): Resource {
-    if (route === AppRoute.WHEEL) return $r('app.media.ui_home_wheel');
-    if (route === AppRoute.DRAW) return $r('app.media.ui_home_draw');
-    if (route === AppRoute.FINGER_SELECT) return $r('app.media.ui_home_finger');
-    if (route === AppRoute.COIN) return $r('app.media.ui_home_coin');
-    if (route === AppRoute.YES_NO) return $r('app.media.ui_home_yesno');
-    return $r('app.media.ui_home_number');
+    const dark: boolean = this.theme().isDark;
+    if (route === AppRoute.WHEEL) return dark ?
+      $r('app.media.ui_home_wheel_dark') : $r('app.media.ui_home_wheel');
+    if (route === AppRoute.DRAW) return dark ?
+      $r('app.media.ui_home_draw_dark') : $r('app.media.ui_home_draw');
+    if (route === AppRoute.FINGER_SELECT) return dark ?
+      $r('app.media.ui_home_finger_dark') : $r('app.media.ui_home_finger');
+    if (route === AppRoute.COIN) return dark ?
+      $r('app.media.ui_home_coin_dark') : $r('app.media.ui_home_coin');
+    if (route === AppRoute.YES_NO) return dark ?
+      $r('app.media.ui_home_yesno_dark') : $r('app.media.ui_home_yesno');
+    return dark ?
+      $r('app.media.ui_home_number_dark') : $r('app.media.ui_home_number');
   }
 
   private templateIcon(template: DecisionTemplate): Resource {
-    if (template.id === 'preset_eat') return $r('app.media.ui_quick_food');
-    if (template.id === 'preset_takeout') return $r('app.media.ui_quick_takeout');
-    if (template.id === 'preset_weekend') return $r('app.media.ui_quick_weekend');
-    if (template.id === 'preset_first') return $r('app.media.ui_quick_first');
+    const dark: boolean = this.theme().isDark;
+    if (template.id === 'preset_eat') return dark ?
+      $r('app.media.ui_quick_food_dark') : $r('app.media.ui_quick_food');
+    if (template.id === 'preset_takeout') return dark ?
+      $r('app.media.ui_quick_takeout_dark') : $r('app.media.ui_quick_takeout');
+    if (template.id === 'preset_weekend') return dark ?
+      $r('app.media.ui_quick_weekend_dark') : $r('app.media.ui_quick_weekend');
+    if (template.id === 'preset_first') return dark ?
+      $r('app.media.ui_quick_first_dark') : $r('app.media.ui_quick_first');
     return template.toolType === ToolType.WHEEL ?
-      $r('app.media.ui_home_wheel') : $r('app.media.ui_home_draw');
+      this.toolIcon(AppRoute.WHEEL) : this.toolIcon(AppRoute.DRAW);
   }
 
   private openTool(tool: HomeToolItem, title: string = ''): void {
@@ -135,9 +153,9 @@ struct Index {
   @Builder
   private toolCard(tool: HomeToolItem) {
     AppCard({ colors: this.theme(), contentPadding: 10 }) {
-      Row({ space: 6 }) {
+      Row({ space: this.theme().isDark ? 4 : 6 }) {
         Image(this.toolIcon(tool.route))
-          .width(62)
+          .width(this.theme().isDark ? 58 : 62)
           .height(78)
           .objectFit(ImageFit.Contain)
         Column({ space: 6 }) {
@@ -149,13 +167,18 @@ struct Index {
             .maxLines(1)
           Text(tool.description)
             .width('100%')
-            .fontSize(9)
+            .fontSize(this.theme().isDark ? 8 : 9)
             .fontColor(this.theme().subtext)
             .maxLines(1)
         }
         .layoutWeight(1)
         .alignItems(HorizontalAlign.Start)
         .justifyContent(FlexAlign.Center)
+        if (this.theme().isDark) {
+          Text('›')
+            .fontSize(24)
+            .fontColor(this.theme().subtext)
+        }
       }
       .width('100%')
       .height(80)
@@ -165,12 +188,24 @@ struct Index {
   }
 
   @Builder
-  private headerAction(icon: Resource, label: string, action: () => void) {
+  private headerAction(
+    lightIcon: Resource,
+    darkIcon: Resource,
+    label: string,
+    action: () => void
+  ) {
     Column({ space: 2 }) {
-      Image(icon)
-        .width(28)
-        .height(28)
-        .objectFit(ImageFit.Contain)
+      if (this.theme().isDark) {
+        Image(darkIcon)
+          .width(28)
+          .height(28)
+          .objectFit(ImageFit.Contain)
+      } else {
+        Image(lightIcon)
+          .width(28)
+          .height(28)
+          .objectFit(ImageFit.Contain)
+      }
       Text(label)
         .fontSize(11)
         .fontColor(this.theme().text)
@@ -203,6 +238,7 @@ struct Index {
           Row({ space: 8 }) {
             this.headerAction(
               $r('app.media.ui_home_history'),
+              $r('app.media.ui_home_history_dark'),
               '历史',
               (): void => {
               this.pathStack.pushPathByName(AppRoute.HISTORY, undefined);
@@ -210,6 +246,7 @@ struct Index {
             )
             this.headerAction(
               $r('app.media.ui_home_settings'),
+              $r('app.media.ui_home_settings_dark'),
               '设置',
               (): void => {
               this.pathStack.pushPathByName(AppRoute.SETTINGS, undefined);
@@ -231,6 +268,7 @@ struct Index {
         .columnsGap(12)
         .rowsGap(12)
         .width('100%')
+        .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
 
         Column({ space: 12 }) {
           Row() {
@@ -310,13 +348,15 @@ struct Index {
     .width('100%')
     .height('100%')
     .scrollBar(BarState.Off)
+    .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
     .backgroundColor(this.theme().background)
   }
 
   @Builder
   destination(name: string) {
     NavDestination() {
-      if (name === AppRoute.PRIVACY) {
+      Row() {
+        if (name === AppRoute.PRIVACY) {
         PrivacyContent({
           colors: this.theme(),
           onBack: (): void => {
@@ -423,7 +463,11 @@ struct Index {
         .padding(20)
         .alignItems(HorizontalAlign.Start)
         .backgroundColor(this.theme().background)
+        }
       }
+      .width('100%')
+      .height('100%')
+      .justifyContent(FlexAlign.Center)
     }
     .hideTitleBar(true)
   }
@@ -437,6 +481,11 @@ struct Index {
     .mode(NavigationMode.Stack)
     .width('100%')
     .height('100%')
+    .padding({
+      top: this.safeAreaLength(this.topSafeAreaPx),
+      bottom: this.safeAreaLength(this.bottomSafeAreaPx)
+    })
+    .backgroundColor(this.theme().background)
     .onAreaChange((_oldValue: Area, newValue: Area): void => {
       this.contentWidth = Number(newValue.width);
     })

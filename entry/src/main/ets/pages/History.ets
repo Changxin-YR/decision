@@ -25,6 +25,7 @@ export struct HistoryPage {
   @State private store: AppStore = appStore;
   @State private selected: HistoryRecord | null = null;
   @State private filter: string = '全部';
+  @State private pendingDelete: HistoryRecord | null = null;
   private clearDialog: CustomDialogController = new CustomDialogController({
     builder: ConfirmDialog({
       title: '清空历史记录',
@@ -33,6 +34,22 @@ export struct HistoryPage {
       colors: this.colors,
       onConfirm: (): void => {
         this.clearAll();
+      }
+    }),
+    autoCancel: true,
+    alignment: DialogAlignment.Center
+  });
+  private deleteDialog: CustomDialogController = new CustomDialogController({
+    builder: ConfirmDialog({
+      title: '删除记录',
+      message: '确定要删除这条历史记录吗？',
+      confirmLabel: '删除',
+      colors: this.colors,
+      onConfirm: (): void => {
+        if (this.pendingDelete !== null) {
+          this.remove(this.pendingDelete);
+          this.pendingDelete = null;
+        }
       }
     }),
     autoCancel: true,
@@ -83,11 +100,17 @@ export struct HistoryPage {
   }
 
   private historyIcon(type: ToolType): Resource {
-    if (type === ToolType.WHEEL) return $r('app.media.ui_history_wheel');
-    if (type === ToolType.DRAW) return $r('app.media.ui_history_draw');
-    if (type === ToolType.COIN) return $r('app.media.ui_history_coin');
-    if (type === ToolType.YES_NO) return $r('app.media.ui_history_yesno');
-    return $r('app.media.ui_history_number');
+    const dark: boolean = this.colors.isDark;
+    if (type === ToolType.WHEEL) return dark ?
+      $r('app.media.ui_home_wheel_dark') : $r('app.media.ui_home_wheel');
+    if (type === ToolType.DRAW) return dark ?
+      $r('app.media.ui_home_draw_dark') : $r('app.media.ui_home_draw');
+    if (type === ToolType.COIN) return dark ?
+      $r('app.media.ui_home_coin_dark') : $r('app.media.ui_home_coin');
+    if (type === ToolType.YES_NO) return dark ?
+      $r('app.media.ui_home_yesno_dark') : $r('app.media.ui_home_yesno');
+    return dark ?
+      $r('app.media.ui_home_number_dark') : $r('app.media.ui_home_number');
   }
 
   private dateLabel(isoTime: string): string {
@@ -166,7 +189,8 @@ export struct HistoryPage {
     .gesture(
       LongPressGesture({ duration: 600 })
         .onAction((): void => {
-          this.remove(record);
+          this.pendingDelete = record;
+          this.deleteDialog.open();
         })
     )
   }
@@ -176,8 +200,7 @@ export struct HistoryPage {
       Column({ space: AppSpacing.MD }) {
         PageHeader({
           title: '历史记录',
-          showRightIcon: this.store.history.length > 0,
-          rightIcon: $r('app.media.ui_history_clear'),
+          rightGlyph: this.store.history.length > 0 ? '⌫' : '',
           colors: this.colors,
           onBack: (): void => this.onBack(),
           onRightPress: (): void => this.clearDialog.open()
@@ -243,9 +266,11 @@ export struct HistoryPage {
           .layoutWeight(1)
           .width('100%')
           .scrollBar(BarState.Off)
+          .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
         }
 
         AppButton({
+          colors: this.colors,
           label: '返回首页',
           variant: AppButtonVariant.SECONDARY,
           onPress: (): void => this.onBack()
@@ -287,6 +312,7 @@ export struct HistoryPage {
               .fontColor(this.colors.text)
               .textAlign(TextAlign.Center)
             AppButton({
+              colors: this.colors,
               label: '再次使用',
               onPress: (): void => {
                 if (this.selected !== null) {
@@ -297,6 +323,7 @@ export struct HistoryPage {
               }
             })
             AppButton({
+              colors: this.colors,
               label: '关闭',
               variant: AppButtonVariant.SECONDARY,
               onPress: (): void => {
@@ -316,5 +343,6 @@ export struct HistoryPage {
     }
     .width('100%')
     .height('100%')
+    .constraintSize({ maxWidth: 720 })
   }
 }

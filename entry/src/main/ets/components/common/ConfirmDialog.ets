@@ -30,11 +30,13 @@ export struct ConfirmDialog {
         .fontColor(this.colors.subtext)
       Column({ space: 12 }) {
         AppButton({
+          colors: this.colors,
           label: '取消',
           variant: AppButtonVariant.SECONDARY,
           onPress: (): void => this.controller.close()
         })
         AppButton({
+          colors: this.colors,
           label: this.confirmLabel,
           variant: AppButtonVariant.DANGER,
           onPress: (): void => {

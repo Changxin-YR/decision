@@ -7,3 +7,9 @@ python $checker $projectRoot
 if ($LASTEXITCODE -ne 0) {
   exit $LASTEXITCODE
 }
+
+& (Join-Path $PSScriptRoot 'check-appgallery-ux.ps1')
+& (Join-Path $PSScriptRoot 'check-feedback-release.ps1')
+& (Join-Path $PSScriptRoot 'check-finger-select-layout.ps1')
+& (Join-Path $PSScriptRoot 'check-dark-theme-coverage.ps1')
+& (Join-Path $PSScriptRoot 'check-visual-integrity.ps1')

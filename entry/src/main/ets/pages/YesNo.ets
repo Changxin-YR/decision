@@ -5,6 +5,7 @@ import { ResultSheet } from '../components/common/ResultSheet';
 import { AppFontSizes, AppSpacing, ThemeTokens } from '../constants/DesignTokens';
 import { RandomService } from '../domain/random/RandomService';
 import { SimpleDecisionState } from '../domain/state/SimpleDecisionState';
+import { DecisionTiming } from '../domain/feedback/DecisionTiming';
 import { HistoryRecord, ToolType } from '../models/AppModels';
 import { appLifecycleBus } from '../services/AppLifecycleBus';
 import { feedbackService } from '../services/FeedbackService';
@@ -47,19 +48,29 @@ export struct YesNoPage {
     }
     this.state.cancel();
     this.running = false;
+    soundService.stop();
   }
 
-  private decide(): void {
+  private async decide(forced?: string): Promise<void> {
     if (!this.state.begin()) {
       return;
     }
-    const choice: string = RandomService.randomBoolean() ? '是' : '否';
+    const choice: string = forced !== undefined ? forced :
+      (RandomService.randomBoolean() ? '是' : '否');
     this.running = true;
     this.result = '';
     this.saved = false;
-    soundService.play(SoundEffect.TAP);
-    this.timerId = setTimeout((): void => {
+    await soundService.play(SoundEffect.TAP);
+    if (!this.running) {
+      return;
+    }
+    this.timerId = setTimeout(async (): Promise<void> => {
+      this.timerId = -1;
       if (!this.state.complete()) {
+        return;
+      }
+      await soundService.play(SoundEffect.RESULT);
+      if (!this.running) {
         return;
       }
       this.running = false;
@@ -73,11 +84,10 @@ export struct YesNoPage {
         createdAt: new Date().toISOString()
       };
       feedbackService.impact();
-      soundService.play(SoundEffect.RESULT);
       if (appStore.settings.autoSaveHistory) {
         this.save();
       }
-    }, 400);
+    }, DecisionTiming.YES_NO_RESULT_AT);
   }
 
   private async save(): Promise<void> {
@@ -121,7 +131,9 @@ export struct YesNoPage {
             .border({ width: 2, color: this.colors.isDark ? this.colors.accent : '#D4EBFC' })
             .shadow({ radius: 18, color: this.colors.isDark ? this.colors.glow : '#182D94F4', offsetX: 0, offsetY: 4 })
             .enabled(!this.running)
-            .onClick((): void => this.decide())
+            .onClick((): void => {
+              this.decide('是');
+            })
           Button(this.running ? '…' : '否', { type: ButtonType.Circle })
             .width(112)
             .height(112)
@@ -132,14 +144,18 @@ export struct YesNoPage {
             .border({ width: 2, color: this.colors.border })
             .shadow({ radius: 14, color: '#1427496B', offsetX: 0, offsetY: 4 })
             .enabled(!this.running)
-            .onClick((): void => this.decide())
+            .onClick((): void => {
+              this.decide('否');
+            })
         }
         Blank()
         AppButton({
           colors: this.colors,
           label: '交给直觉',
           isEnabled: !this.running,
-          onPress: (): void => this.decide()
+          onPress: (): void => {
+            this.decide(undefined);
+          }
         })
         if (this.result.length > 0) {
           AppButton({
@@ -161,10 +177,18 @@ export struct YesNoPage {
         visible: this.result.length > 0,
         result: this.result,
         colors: this.colors,
+        showRetry: true,
+        onRetry: (): void => {
+          this.result = '';
+          this.decide(undefined);
+        },
         onClose: (): void => {
           this.result = '';
         }
       })
     }
+    .width('100%')
+    .height('100%')
+    .constraintSize({ maxWidth: 720 })
   }
 }

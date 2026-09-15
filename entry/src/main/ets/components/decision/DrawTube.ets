@@ -22,10 +22,12 @@ export struct DrawTube {
         })
         .translate({ y: this.stickOffset * 0.25 - 24 })
 
-      Image($r('app.media.ui_draw_box'))
+      Image(this.colors.isDark ?
+        $r('app.media.ui_draw_box_dark_v2') : $r('app.media.ui_draw_box'))
         .width(260)
         .height(260)
         .objectFit(ImageFit.Contain)
+        .borderRadius(this.colors.isDark ? 18 : 0)
         .rotate({ angle: this.shakeAngle })
         .translate({ y: this.shakeY })
 

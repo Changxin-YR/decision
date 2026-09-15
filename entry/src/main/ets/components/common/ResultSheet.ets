@@ -26,6 +26,7 @@ export struct ResultSheet {
           .width('100%')
           .height('100%')
           .backgroundColor('#66000000')
+          .onClick((): void => this.onClose())
 
         Column({ space: 20 }) {
           Text(this.title)
@@ -38,11 +39,13 @@ export struct ResultSheet {
             .textAlign(TextAlign.Center)
           if (this.showRetry) {
             AppButton({
+              colors: this.colors,
               label: this.retryLabel,
               onPress: (): void => this.onRetry()
             })
           }
           AppButton({
+            colors: this.colors,
             label: AppStrings.CLOSE_RESULT,
             variant: this.showRetry ? AppButtonVariant.SECONDARY : AppButtonVariant.PRIMARY,
             onPress: (): void => this.onClose()

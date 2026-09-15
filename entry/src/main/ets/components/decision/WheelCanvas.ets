@@ -81,8 +81,6 @@ export struct WheelCanvas {
         .fill(this.colors.card)
         .stroke(this.colors.border)
         .strokeWidth(2)
-        .shadow({ radius: this.colors.isDark ? 16 : 0, color: this.colors.glow,
-          offsetX: 0, offsetY: 0 })
 
       Text('转')
         .fontSize(20)
@@ -94,7 +92,8 @@ export struct WheelCanvas {
         .height(30)
         .points([[0, 0], [28, 0], [14, 30]])
         .fill(this.colors.accent)
-        .position({ x: this.diameter / 2 - 14, y: -2 })
+        .position({ x: '50%', y: -2 })
+        .translate({ x: -14 })
     }
     .width('100%')
     .height(this.diameter + 18)

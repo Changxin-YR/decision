@@ -25,7 +25,7 @@ export default function themeResolverTest(): void {
       expect(tokens.background).assertEqual('#071426');
       expect(tokens.card).assertEqual('#101E35');
       expect(tokens.text).assertEqual(AppColors.DARK_TEXT);
-      expect(tokens.border).assertEqual('#294361');
+      expect(tokens.border).assertEqual('#203654');
       expect(tokens.accent).assertEqual(AppColors.PRIMARY);
       expect(tokens.input).assertEqual('#0C1930');
       expect(tokens.primaryStart).assertEqual('#2E83FF');
@@ -39,6 +39,13 @@ export default function themeResolverTest(): void {
 
       expect(dark.background).assertEqual(AppColors.DARK_BACKGROUND);
       expect(light.background).assertEqual(AppColors.LIGHT_BACKGROUND);
+    });
+
+    it('resolvesSystemBarContentForEveryThemeMode', 0, () => {
+      expect(ThemeResolver.systemBarContentColor(ThemeMode.DARK, false)).assertEqual('#FFFFFF');
+      expect(ThemeResolver.systemBarContentColor(ThemeMode.LIGHT, true)).assertEqual(AppColors.LIGHT_TEXT);
+      expect(ThemeResolver.systemBarContentColor(ThemeMode.SYSTEM, true)).assertEqual('#FFFFFF');
+      expect(ThemeResolver.systemBarContentColor(ThemeMode.SYSTEM, false)).assertEqual(AppColors.LIGHT_TEXT);
     });
   });
 }

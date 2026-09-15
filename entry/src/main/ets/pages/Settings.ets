@@ -8,6 +8,11 @@ import {
 } from '../constants/DesignTokens';
 import { AppStrings } from '../constants/AppStrings';
 import { ThemeMode } from '../models/AppModels';
+import {
+  feedbackSettingsController,
+  FeedbackUpdateResult
+} from '../services/FeedbackSettingsController';
+import { systemBarService } from '../services/SystemBarService';
 import { appStore, AppStore } from '../stores/AppStore';
 
 @Component
@@ -73,7 +78,44 @@ export struct SettingsPage {
   }
 
   private async clearAll(): Promise<void> {
-    this.toast(await this.store.clearAll(), '全部数据已清除');
+    const cleared: boolean = await this.store.clearAll();
+    if (cleared) {
+      systemBarService.setThemeMode(this.store.settings.themeMode);
+    }
+    this.toast(cleared, '全部数据已清除');
+  }
+
+  private showMessage(message: string): void {
+    try {
+      this.getUIContext().getPromptAction().showToast({ message });
+    } catch (_error) {
+    }
+  }
+
+  private async updateVibrationEnabled(value: boolean): Promise<void> {
+    const result: FeedbackUpdateResult =
+      await feedbackSettingsController.setVibrationEnabled(value);
+    if (!result.saved) {
+      this.showMessage('振动设置保存失败，请重试');
+    } else if (value && !result.previewed) {
+      this.showMessage('振动反馈暂不可用，请检查系统振动设置');
+    }
+  }
+
+  private async updateSoundEnabled(value: boolean): Promise<void> {
+    const result: FeedbackUpdateResult =
+      await feedbackSettingsController.setSoundEnabled(value);
+    if (!result.saved) {
+      this.showMessage('音效设置保存失败，请重试');
+    } else if (value && !result.previewed) {
+      this.showMessage('音效暂不可用，请检查系统音量');
+    }
+  }
+
+  private async updateThemeMode(mode: ThemeMode): Promise<void> {
+    if (await this.store.updateSettings({ themeMode: mode })) {
+      systemBarService.setThemeMode(mode);
+    }
   }
 
   @Builder
@@ -142,14 +184,14 @@ export struct SettingsPage {
               AppStrings.VIBRATION,
               this.store.settings.vibrationEnabled,
               (value: boolean): void => {
-                this.store.updateSettings({ vibrationEnabled: value });
+                this.updateVibrationEnabled(value);
               }
             )
             this.settingSwitch(
               AppStrings.SOUND,
               this.store.settings.soundEnabled,
               (value: boolean): void => {
-                this.store.updateSettings({ soundEnabled: value });
+                this.updateSoundEnabled(value);
               }
             )
           }
@@ -182,7 +224,7 @@ export struct SettingsPage {
                   this.colors.accent : this.colors.card)
                 .borderRadius(AppRadii.CARD)
                 .onClick((): void => {
-                  this.store.updateSettings({ themeMode: mode });
+                  this.updateThemeMode(mode);
                 })
             })
           }
@@ -233,9 +275,11 @@ export struct SettingsPage {
       }
       .layoutWeight(1)
       .scrollBar(BarState.Off)
+      .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
     }
     .width('100%')
     .height('100%')
+    .constraintSize({ maxWidth: 720 })
     .padding({ left: 16, right: 16, top: 14 })
     .backgroundColor(this.colors.background)
   }

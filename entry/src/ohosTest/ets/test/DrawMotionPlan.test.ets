@@ -10,7 +10,7 @@ export default function drawMotionPlanTest(): void {
       expect(DrawMotionPlan.SHAKE_END).assertEqual(420);
       expect(DrawMotionPlan.PAUSE_END).assertEqual(560);
       expect(DrawMotionPlan.LIFT_SETTLE).assertEqual(1450);
-      expect(DrawMotionPlan.RESULT_AT).assertEqual(2000);
+      expect(DrawMotionPlan.RESULT_AT).assertEqual(3000);
     });
 
     it('usesFiveDecayingShakeSteps', 0, (): void => {
