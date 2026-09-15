@@ -1,6 +1,6 @@
 {
   "modelVersion": "6.0.0",
-  "description": "做个决定 API 24 原生鸿蒙离线决策工具",
+  "description": "做个决定 HarmonyOS 6.0.2(22) 原生离线决策工具",
   "dependencies": {
   },
   "devDependencies": {
